@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   MessageCircle,
@@ -80,6 +80,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Progress } from "./ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -644,7 +645,7 @@ function MessageList({
   return (
     <div className="flex-1 overflow-y-auto">
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
+        <MessageItem message={message} />
       ))}
       <div ref={messagesEndRef} />
     </div>
@@ -975,6 +976,7 @@ export function SubscriberChat() {
   const [showSubscribers, setShowSubscribers] = useState(true);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | undefined>();
   const [activeTab, setActiveTab] = useState("chat");
+  const { t } = useTranslation();
 
   const currentChannelMessages = messages.filter(msg => msg.channelId === activeChannel);
   const currentChannel = channels.find(ch => ch.id === activeChannel);
@@ -1034,10 +1036,10 @@ export function SubscriberChat() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
         <div>
           <h1 className="font-serif font-bold text-2xl lg:text-3xl" style={{ color: COLORS.dark }}>
-            Subscriber Chat
+            {t("pages.subscriberChat.title")}
           </h1>
           <p className="text-sm lg:text-base" style={{ color: COLORS.dark + "80" }}>
-            Real-time communication with your subscriber community
+            {t("pages.subscriberChat.subtitle")}
           </p>
         </div>
         

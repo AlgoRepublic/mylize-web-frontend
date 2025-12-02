@@ -25,7 +25,8 @@ import {
   LogOut
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -185,9 +186,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: SidebarProps) {
+  const { t, i18n } = useTranslation();
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [activeSubItem, setActiveSubItem] = useState("Overview");
   const [expandedSections, setExpandedSections] = useState<string[]>(["Dashboard"]);
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const toggleSection = (sectionLabel: string) => {
     setExpandedSections(prev => 
@@ -207,132 +210,132 @@ export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: Sideba
 
   // Dashboard & Overview
   const dashboardItems = [
-    { icon: <LayoutDashboard className="w-4 h-4" />, label: "Overview", onClick: () => {
-      setActiveSubItem("Overview");
+    { icon: <LayoutDashboard className="w-4 h-4" />, label: t("sidebar.dashboard.overview"), onClick: () => {
+      setActiveSubItem(t("sidebar.dashboard.overview"));
       onNavigate?.("Dashboard", "Overview");
     }},
-    { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: "12", onClick: () => {
-      setActiveSubItem("Notifications");
+    { icon: <Bell className="w-4 h-4" />, label: t("sidebar.dashboard.notifications"), badge: "12", onClick: () => {
+      setActiveSubItem(t("sidebar.dashboard.notifications"));
       onNavigate?.("Dashboard", "Notifications");
     }},
   ];
 
   // Profile & Company Management
   const profileItems = [
-    { icon: <ShieldCheck className="w-4 h-4" />, label: "KYC Verification", onClick: () => {
-      setActiveSubItem("KYC Verification");
+    { icon: <ShieldCheck className="w-4 h-4" />, label: t("sidebar.profile.kycVerification"), onClick: () => {
+      setActiveSubItem(t("sidebar.profile.kycVerification"));
       onNavigate?.("Profile & Company", "KYC Verification");
     }},
-    { icon: <Building2 className="w-4 h-4" />, label: "Company Association", onClick: () => {
-      setActiveSubItem("Company Association");
+    { icon: <Building2 className="w-4 h-4" />, label: t("sidebar.profile.companyAssociation"), onClick: () => {
+      setActiveSubItem(t("sidebar.profile.companyAssociation"));
       onNavigate?.("Profile & Company", "Company Association");
     }},
-    { icon: <Lock className="w-4 h-4" />, label: "Private Access", onClick: () => {
-      setActiveSubItem("Private Access");
+    { icon: <Lock className="w-4 h-4" />, label: t("sidebar.profile.privateAccess"), onClick: () => {
+      setActiveSubItem(t("sidebar.profile.privateAccess"));
       onNavigate?.("Profile & Company", "Private Access");
     }},
-    { icon: <Palette className="w-4 h-4" />, label: "Profile & Branding", onClick: () => {
-      setActiveSubItem("Profile & Branding");
+    { icon: <Palette className="w-4 h-4" />, label: t("sidebar.profile.profileBranding"), onClick: () => {
+      setActiveSubItem(t("sidebar.profile.profileBranding"));
       onNavigate?.("Profile & Company", "Profile & Branding");
     }},
   ];
 
   // Content & Trading
   const contentItems = [
-    { icon: <Package className="w-4 h-4" />, label: "Subscription Packages", onClick: () => {
-      setActiveSubItem("Subscription Packages");
+    { icon: <Package className="w-4 h-4" />, label: t("sidebar.content.subscriptionPackages"), onClick: () => {
+      setActiveSubItem(t("sidebar.content.subscriptionPackages"));
       onNavigate?.("Content & Trading", "Subscription Packages");
     }},
-    { icon: <Signal className="w-4 h-4" />, label: "Signal Center", badge: "3", onClick: () => {
-      setActiveSubItem("Signal Center");
+    { icon: <Signal className="w-4 h-4" />, label: t("sidebar.content.signalCenter"), badge: "3", onClick: () => {
+      setActiveSubItem(t("sidebar.content.signalCenter"));
       onNavigate?.("Content & Trading", "Signal Center");
     }},
-    { icon: <TrendingUp className="w-4 h-4" />, label: "Signal Monitor", badge: "8", onClick: () => {
-      setActiveSubItem("Signal Monitor");
+    { icon: <TrendingUp className="w-4 h-4" />, label: t("sidebar.content.signalMonitor"), badge: "8", onClick: () => {
+      setActiveSubItem(t("sidebar.content.signalMonitor"));
       onNavigate?.("Content & Trading", "Signal Monitor");
     }},
-    { icon: <FileText className="w-4 h-4" />, label: "Content Publishing", onClick: () => {
-      setActiveSubItem("Content Publishing");
+    { icon: <FileText className="w-4 h-4" />, label: t("sidebar.content.contentPublishing"), onClick: () => {
+      setActiveSubItem(t("sidebar.content.contentPublishing"));
       onNavigate?.("Content & Trading", "Content Publishing");
     }},
-    { icon: <Newspaper className="w-4 h-4" />, label: "News Center", onClick: () => {
-      setActiveSubItem("News Center");
+    { icon: <Newspaper className="w-4 h-4" />, label: t("sidebar.content.newsCenter"), onClick: () => {
+      setActiveSubItem(t("sidebar.content.newsCenter"));
       onNavigate?.("Content & Trading", "News Center");
     }},
   ];
 
   // Education & Live Content
   const educationItems = [
-    { icon: <BookOpen className="w-4 h-4" />, label: "Courses & Videos", onClick: () => {
-      setActiveSubItem("Courses & Videos");
+    { icon: <BookOpen className="w-4 h-4" />, label: t("sidebar.education.coursesVideos"), onClick: () => {
+      setActiveSubItem(t("sidebar.education.coursesVideos"));
       onNavigate?.("Education & Live", "Courses & Videos");
     }},
-    { icon: <Video className="w-4 h-4" />, label: "Live Streaming", onClick: () => {
-      setActiveSubItem("Live Streaming");
+    { icon: <Video className="w-4 h-4" />, label: t("sidebar.education.liveStreaming"), onClick: () => {
+      setActiveSubItem(t("sidebar.education.liveStreaming"));
       onNavigate?.("Education & Live", "Live Streaming");
     }},
-    { icon: <Calendar className="w-4 h-4" />, label: "Consultation Booking", badge: "5", onClick: () => {
-      setActiveSubItem("Consultation Booking");
+    { icon: <Calendar className="w-4 h-4" />, label: t("sidebar.education.consultationBooking"), badge: "5", onClick: () => {
+      setActiveSubItem(t("sidebar.education.consultationBooking"));
       onNavigate?.("Education & Live", "Consultation Booking");
     }},
   ];
 
   // Communication
   const communicationItems = [
-    { icon: <MessageCircle className="w-4 h-4" />, label: "Subscriber Chat", badge: "24", onClick: () => {
-      setActiveSubItem("Subscriber Chat");
+    { icon: <MessageCircle className="w-4 h-4" />, label: t("sidebar.communication.subscriberChat"), badge: "24", onClick: () => {
+      setActiveSubItem(t("sidebar.communication.subscriberChat"));
       onNavigate?.("Communication", "Subscriber Chat");
     }},
   ];
 
   // Marketing & Revenue
   const marketingItems = [
-    { icon: <Gift className="w-4 h-4" />, label: "Discount Codes", onClick: () => {
-      setActiveSubItem("Discount Codes");
+    { icon: <Gift className="w-4 h-4" />, label: t("sidebar.marketing.discountCodes"), onClick: () => {
+      setActiveSubItem(t("sidebar.marketing.discountCodes"));
       onNavigate?.("Marketing & Revenue", "Discount Codes");
     }},
-    { icon: <Users className="w-4 h-4" />, label: "Referral System", onClick: () => {
-      setActiveSubItem("Referral System");
+    { icon: <Users className="w-4 h-4" />, label: t("sidebar.marketing.referralSystem"), onClick: () => {
+      setActiveSubItem(t("sidebar.marketing.referralSystem"));
       onNavigate?.("Marketing & Revenue", "Referral System");
     }},
-    { icon: <DollarSign className="w-4 h-4" />, label: "Payout Dashboard", onClick: () => {
-      setActiveSubItem("Payout Dashboard");
+    { icon: <DollarSign className="w-4 h-4" />, label: t("sidebar.marketing.payoutDashboard"), onClick: () => {
+      setActiveSubItem(t("sidebar.marketing.payoutDashboard"));
       onNavigate?.("Marketing & Revenue", "Payout Dashboard");
     }},
   ];
 
   const mainSections = [
     {
-      label: "Dashboard",
+      label: t("sidebar.sections.dashboard"),
       icon: <LayoutDashboard className="w-5 h-5" />,
       items: dashboardItems,
       badge: "12"
     },
     {
-      label: "Profile & Company",
+      label: t("sidebar.sections.profileCompany"),
       icon: <User className="w-5 h-5" />,
       items: profileItems
     },
     {
-      label: "Content & Trading",
+      label: t("sidebar.sections.contentTrading"),
       icon: <TrendingUp className="w-5 h-5" />,
       items: contentItems,
       badge: "3"
     },
     {
-      label: "Education & Live",
+      label: t("sidebar.sections.educationLive"),
       icon: <BookOpen className="w-5 h-5" />,
       items: educationItems,
       badge: "5"
     },
     {
-      label: "Communication",
+      label: t("sidebar.sections.communication"),
       icon: <MessageSquare className="w-5 h-5" />,
       items: communicationItems,
       badge: "24"
     },
     {
-      label: "Marketing & Revenue",
+      label: t("sidebar.sections.marketingRevenue"),
       icon: <DollarSign className="w-5 h-5" />,
       items: marketingItems
     }
@@ -340,7 +343,7 @@ export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: Sideba
 
   return (
     <motion.div
-      className={`${
+      className={`${isRtl ? "rtl" : ""} ${
         isMobile 
           ? "w-full bg-white flex flex-col py-4 px-4 overflow-y-auto" 
           : "w-72 bg-white border-r flex flex-col py-6 px-4 shadow-lg overflow-y-auto"
@@ -414,17 +417,17 @@ export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: Sideba
       >
         <SidebarItem
           icon={<Settings className="w-5 h-5" />}
-          label="Settings"
-          isActive={activeItem === "Settings"}
+          label={t("sidebar.settings")}
+          isActive={activeItem === t("sidebar.settings")}
           onClick={() => {
-            setActiveItem("Settings");
+            setActiveItem(t("sidebar.settings"));
             setActiveSubItem("");
             onNavigate?.("Settings");
           }}
         />
         <SidebarItem
           icon={<LogOut className="w-5 h-5" />}
-          label="Logout"
+          label={t("sidebar.logout")}
           onClick={onLogout}
         />
       </motion.div>
@@ -456,7 +459,7 @@ export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: Sideba
                 {user.fullName}
               </div>
               <div className="text-xs font-sans truncate" style={{ color: COLORS.dark + "80" }}>
-                {user.accountType === 'demo' ? 'Demo Account' : 'Professional Analyst'}
+                {user.accountType === 'demo' ? t("sidebar.profileBadge.demoAccount") : t("sidebar.profileBadge.professionalAnalyst")}
               </div>
               <div className="flex items-center gap-1 mt-1">
                 <div 
@@ -467,7 +470,7 @@ export function Sidebar({ onNavigate, onLogout, user, isMobile = false }: Sideba
                   className="text-xs font-sans font-medium" 
                   style={{ color: user.accountType === 'demo' ? "#F59E0B" : "#10B981" }}
                 >
-                  {user.accountType === 'demo' ? 'Demo Access' : 'Verified'}
+                  {user.accountType === 'demo' ? t("sidebar.profileBadge.demoAccess") : t("sidebar.profileBadge.verified")}
                 </span>
               </div>
             </div>

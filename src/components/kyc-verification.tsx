@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Upload, 
@@ -25,6 +25,7 @@ import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { Textarea } from "./ui/textarea";
 import { Alert, AlertDescription } from "./ui/alert";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -316,6 +317,7 @@ function DocumentCard({ document, onUpload, onDelete, onView, onReupload }: Docu
 }
 
 function KYCStatusCard({ status }: { status: KYCStatus }) {
+  const { t } = useTranslation();
   const getOverallStatusColor = (overall: string) => {
     switch (overall) {
       case "approved": return "#10B981";
@@ -329,12 +331,18 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
 
   const getOverallStatusText = (overall: string) => {
     switch (overall) {
-      case "approved": return "Approved - Full Access Granted";
-      case "rejected": return "Rejected - Action Required";
-      case "under_review": return "Under Admin Review";
-      case "in_progress": return "In Progress - Documents Required";
-      case "not_started": return "Not Started";
-      default: return "Unknown Status";
+      case "approved":
+        return t("pages.kycVerification.status.approved");
+      case "rejected":
+        return t("pages.kycVerification.status.rejected");
+      case "under_review":
+        return t("pages.kycVerification.status.under_review");
+      case "in_progress":
+        return t("pages.kycVerification.status.in_progress");
+      case "not_started":
+        return t("pages.kycVerification.status.not_started");
+      default:
+        return t("pages.kycVerification.status.unknown");
     }
   };
 
@@ -352,7 +360,7 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
         </div>
         <div className="flex-1">
           <h3 className="text-xl font-serif font-semibold" style={{ color: COLORS.dark }}>
-            KYC Verification Status
+            {t("pages.kycVerification.statusCardTitle")}
           </h3>
           <p className="text-sm mt-1" style={{ color: getOverallStatusColor(status.overall) }}>
             {getOverallStatusText(status.overall)}
@@ -364,7 +372,7 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium" style={{ color: COLORS.dark }}>
-            Completion Progress
+            {t("pages.kycVerification.completionProgress")}
           </span>
           <span className="text-sm font-semibold" style={{ color: COLORS.primary }}>
             {status.completionPercentage}%
@@ -380,14 +388,16 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
       {(status.submittedDate || status.reviewedDate) && (
         <div className="mb-6 space-y-3">
           <h4 className="text-sm font-medium" style={{ color: COLORS.dark }}>
-            Timeline
+            {t("pages.kycVerification.timelineTitle")}
           </h4>
           <div className="space-y-2">
             {status.submittedDate && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4" style={{ color: COLORS.dark + "60" }} />
                 <span style={{ color: COLORS.dark + "80" }}>
-                  Application submitted: {status.submittedDate.toLocaleDateString()}
+                  {t("pages.kycVerification.submittedLabel", {
+                    date: status.submittedDate.toLocaleDateString(),
+                  })}
                 </span>
               </div>
             )}
@@ -395,7 +405,9 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle className="w-4 h-4" style={{ color: "#10B981" }} />
                 <span style={{ color: COLORS.dark + "80" }}>
-                  Reviewed: {status.reviewedDate.toLocaleDateString()}
+                  {t("pages.kycVerification.reviewedLabel", {
+                    date: status.reviewedDate.toLocaleDateString(),
+                  })}
                 </span>
               </div>
             )}
@@ -407,7 +419,7 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
       {status.nextSteps && status.nextSteps.length > 0 && (
         <div>
           <h4 className="text-sm font-medium mb-3" style={{ color: COLORS.dark }}>
-            Next Steps
+            {t("pages.kycVerification.nextStepsTitle")}
           </h4>
           <div className="space-y-2">
             {status.nextSteps.map((step, index) => (
@@ -435,7 +447,7 @@ function KYCStatusCard({ status }: { status: KYCStatus }) {
         <Alert className="mt-4">
           <AlertCircle className="w-4 h-4" />
           <AlertDescription>
-            <strong>Admin Message:</strong> {status.adminNotes}
+            <strong>{t("pages.kycVerification.adminMessageLabel")}</strong> {status.adminNotes}
           </AlertDescription>
         </Alert>
       )}
@@ -447,6 +459,7 @@ export function KYCVerification() {
   const [documents, setDocuments] = useState<Document[]>(mockDocuments);
   const [kycStatus, setKycStatus] = useState<KYCStatus>(mockKYCStatus);
   const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleUpload = (documentId: string) => {
     console.log("Upload document:", documentId);
@@ -499,10 +512,10 @@ export function KYCVerification() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            KYC Verification
+            {t("pages.kycVerification.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Complete your verification to unlock all platform features
+            {t("pages.kycVerification.subtitle")}
           </p>
         </div>
         
@@ -512,7 +525,7 @@ export function KYCVerification() {
             style={{ backgroundColor: COLORS.primary }}
           >
             <Upload className="w-4 h-4" />
-            Upload Documents
+            {t("pages.kycVerification.headerCta")}
           </Button>
         )}
       </div>
@@ -526,7 +539,7 @@ export function KYCVerification() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-serif font-semibold" style={{ color: COLORS.dark }}>
-              Required Documents
+              {t("pages.kycVerification.requiredDocumentsTitle")}
             </h3>
             <Badge 
               variant="outline"
@@ -535,7 +548,10 @@ export function KYCVerification() {
                 color: approvedCount === totalRequired ? "#10B981" : COLORS.primary
               }}
             >
-              {approvedCount}/{totalRequired} Approved
+              {t("pages.kycVerification.requiredApprovedLabel", {
+                approved: approvedCount,
+                total: totalRequired,
+              })}
             </Badge>
           </div>
           
@@ -543,7 +559,6 @@ export function KYCVerification() {
             <AnimatePresence>
               {requiredDocuments.map((document) => (
                 <DocumentCard
-                  key={document.id}
                   document={document}
                   onUpload={handleUpload}
                   onDelete={handleDelete}
@@ -559,10 +574,10 @@ export function KYCVerification() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-serif font-semibold" style={{ color: COLORS.dark }}>
-              Optional Documents
+              {t("pages.kycVerification.optionalDocumentsTitle")}
             </h3>
             <Badge variant="outline" className="text-gray-600 border-gray-300">
-              Optional
+              {t("pages.kycVerification.optionalBadge")}
             </Badge>
           </div>
           
@@ -570,7 +585,6 @@ export function KYCVerification() {
             <AnimatePresence>
               {optionalDocuments.map((document) => (
                 <DocumentCard
-                  key={document.id}
                   document={document}
                   onUpload={handleUpload}
                   onDelete={handleDelete}
@@ -586,29 +600,31 @@ export function KYCVerification() {
       {/* Requirements Information */}
       <Card className="p-6">
         <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
-          Document Requirements
+          {t("pages.kycVerification.documentRequirementsTitle")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-medium mb-2" style={{ color: COLORS.dark }}>
-              Identity Documents
+              {t("pages.kycVerification.identityDocumentsTitle")}
             </h4>
             <ul className="text-sm space-y-1" style={{ color: COLORS.dark + "80" }}>
-              <li>• Government-issued photo ID (passport, driver's license)</li>
-              <li>• Must be valid and not expired</li>
-              <li>• Clear, high-resolution image</li>
-              <li>• All corners visible</li>
+              {t("pages.kycVerification.identityRequirements", { returnObjects: true }).map(
+                (item: string, idx: number) => (
+                  <li key={idx}>• {item}</li>
+                )
+              )}
             </ul>
           </div>
           <div>
             <h4 className="font-medium mb-2" style={{ color: COLORS.dark }}>
-              Financial Documents
+              {t("pages.kycVerification.financialDocumentsTitle")}
             </h4>
             <ul className="text-sm space-y-1" style={{ color: COLORS.dark + "80" }}>
-              <li>• Bank statements (last 3 months)</li>
-              <li>• Trading experience certification</li>
-              <li>• Proof of income source</li>
-              <li>• Professional qualifications (if applicable)</li>
+              {t("pages.kycVerification.financialRequirements", { returnObjects: true }).map(
+                (item: string, idx: number) => (
+                  <li key={idx}>• {item}</li>
+                )
+              )}
             </ul>
           </div>
         </div>
@@ -618,8 +634,8 @@ export function KYCVerification() {
       <Alert>
         <MessageSquare className="w-4 h-4" />
         <AlertDescription>
-          <strong>Need Help?</strong> If you have questions about the KYC process or need assistance with document upload, 
-          please contact our support team at <strong>kyc@analystpro.com</strong> or use the chat support.
+          <strong>{t("pages.kycVerification.needHelpTitle")}</strong>{" "}
+          {t("pages.kycVerification.needHelpBody", { email: "kyc@analystpro.com" })}
         </AlertDescription>
       </Alert>
     </div>

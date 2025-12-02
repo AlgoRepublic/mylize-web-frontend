@@ -1,6 +1,7 @@
-import { MoreHorizontal } from "lucide-react";
+import React from 'react';
 import { motion } from "motion/react";
 import { EnhancedStatisticsChart } from "./animated-charts";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -10,6 +11,8 @@ const COLORS = {
 };
 
 export function Statistics() {
+  const { t } = useTranslation();
+
   return (
     <motion.div 
       className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 card-hover transition-all duration-300"
@@ -22,13 +25,17 @@ export function Statistics() {
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-card-title font-serif" style={{ color: COLORS.dark }}>Your Statistics</h4>
+        <h4 className="text-card-title font-serif" style={{ color: COLORS.dark }}>
+          {t("dashboard.statistics.title")}
+        </h4>
         <motion.div 
           className="flex items-center gap-2 cursor-pointer"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <span className="text-sm font-sans font-medium" style={{ color: COLORS.dark + "80" }}>Month</span>
+          <span className="text-sm font-sans font-medium" style={{ color: COLORS.dark + "80" }}>
+            {t("dashboard.statistics.periodFilter")}
+          </span>
           <motion.svg 
             className="w-4 h-4" 
             style={{ color: COLORS.dark + "60" }}
@@ -51,7 +58,7 @@ export function Statistics() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        16 Nov - 16 Dec 2024
+        {t("dashboard.statistics.periodLabel")}
       </motion.div>
       
       <motion.div 
@@ -70,7 +77,7 @@ export function Statistics() {
           74%
         </motion.div>
         <div className="text-caption font-sans" style={{ color: COLORS.dark + "A0" }}>
-          Increase in earnings
+          {t("dashboard.statistics.earningsIncrease")}
         </div>
       </motion.div>
       
@@ -93,7 +100,7 @@ export function Statistics() {
             transition={{ duration: 2, repeat: Infinity }}
           />
           <span className="text-xs font-sans" style={{ color: COLORS.dark + "80" }}>
-            Active Growth
+            {t("dashboard.statistics.activeGrowth")}
           </span>
         </div>
         <motion.span 
@@ -101,7 +108,7 @@ export function Statistics() {
           style={{ color: COLORS.primary }}
           whileHover={{ scale: 1.05 }}
         >
-          View Details
+          {t("dashboard.statistics.viewDetails")}
         </motion.span>
       </motion.div>
     </motion.div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Newspaper,
@@ -1165,7 +1165,6 @@ export function NewsCenter() {
         <AnimatePresence>
           {filteredNews.map((newsItem) => (
             <NewsCard
-              key={newsItem.id}
               news={newsItem}
               onBookmark={handleBookmark}
               onShare={handleShare}

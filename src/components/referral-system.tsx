@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Users,
@@ -45,7 +46,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Switch } from "./ui/switch";
 import { Separator } from "./ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -1103,6 +1104,7 @@ function TransferDialog({ isOpen, onClose, onTransfer, owner }: {
 }
 
 export function ReferralSystem() {
+  const { t } = useTranslation();
   const [stats] = useState<SystemStats>(mockSystemStats);
   const [owners, setOwners] = useState<Owner[]>(mockOwners);
   const [referralCodes, setReferralCodes] = useState<ReferralCode[]>(mockReferralCodes);
@@ -1250,10 +1252,10 @@ export function ReferralSystem() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl font-bold" style={{ color: COLORS.dark }}>
-            Referral System
+            {t("pages.referralSystem.title")}
           </h1>
           <p className="text-gray-600">
-            Manage referral codes, track transactions, and handle payouts
+            {t("pages.referralSystem.subtitle")}
           </p>
         </div>
         
@@ -1261,7 +1263,7 @@ export function ReferralSystem() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Search owners, codes, transactions..."
+              placeholder={t("pages.referralSystem.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full sm:w-80"
@@ -1276,24 +1278,32 @@ export function ReferralSystem() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="owners" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="owners">Owners & Balances</TabsTrigger>
-          <TabsTrigger value="codes">Referral Codes</TabsTrigger>
-          <TabsTrigger value="owed">Owed Amounts</TabsTrigger>
-          <TabsTrigger value="transfers">Transfer History</TabsTrigger>
+          <TabsTrigger value="owners">
+            {t("pages.referralSystem.tabs.ownersBalances")}
+          </TabsTrigger>
+          <TabsTrigger value="codes">
+            {t("pages.referralSystem.tabs.referralCodes")}
+          </TabsTrigger>
+          <TabsTrigger value="owed">
+            {t("pages.referralSystem.tabs.owedAmounts")}
+          </TabsTrigger>
+          <TabsTrigger value="transfers">
+            {t("pages.referralSystem.tabs.transferHistory")}
+          </TabsTrigger>
         </TabsList>
 
         {/* Owners Tab */}
         <TabsContent value="owners" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-xl font-semibold" style={{ color: COLORS.dark }}>
-              Owners & Balances ({filteredOwners.length})
+              {t("pages.referralSystem.tabs.ownersBalances")} ({filteredOwners.length})
             </h2>
             <Button 
               onClick={() => setShowAddOwner(true)}
               style={{ backgroundColor: COLORS.primary }}
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Add Owner
+              {t("pages.referralSystem.actions.addOwner")}
             </Button>
           </div>
 
@@ -1389,7 +1399,7 @@ export function ReferralSystem() {
         <TabsContent value="codes" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-xl font-semibold" style={{ color: COLORS.dark }}>
-              Referral Codes ({filteredCodes.length})
+              {t("pages.referralSystem.tabs.referralCodes")} ({filteredCodes.length})
             </h2>
             <ReferralCodeGenerator onGenerate={handleAddReferralCode} owners={owners} />
           </div>
@@ -1498,14 +1508,14 @@ export function ReferralSystem() {
         <TabsContent value="owed" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-xl font-semibold" style={{ color: COLORS.dark }}>
-              Owed Amounts ({filteredOwedTransactions.length})
+              {t("pages.referralSystem.tabs.owedAmounts")} ({filteredOwedTransactions.length})
             </h2>
             <Button 
               onClick={() => setShowAddOwedAmount(true)}
               style={{ backgroundColor: COLORS.primary }}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Owed Amount
+              {t("pages.referralSystem.actions.addOwedAmount")}
             </Button>
           </div>
 
@@ -1566,7 +1576,7 @@ export function ReferralSystem() {
         <TabsContent value="transfers" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-xl font-semibold" style={{ color: COLORS.dark }}>
-              Transfer History ({filteredTransfers.length})
+              {t("pages.referralSystem.tabs.transferHistory")} ({filteredTransfers.length})
             </h2>
           </div>
 

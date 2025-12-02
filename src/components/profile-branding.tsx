@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   User, 
@@ -49,6 +49,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Progress } from "./ui/progress";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -521,6 +522,7 @@ export function ProfileBranding() {
   const [activeTab, setActiveTab] = useState("basic");
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation();
 
   const handleProfileChange = (field: keyof ProfileData, value: any) => {
     setProfile(prev => ({ ...prev, [field]: value }));
@@ -563,10 +565,10 @@ export function ProfileBranding() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Profile & Branding
+            {t("pages.profileBranding.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Customize your professional profile and build your personal brand
+            {t("pages.profileBranding.subtitle")}
           </p>
         </div>
         
@@ -908,7 +910,6 @@ export function ProfileBranding() {
                   <AnimatePresence>
                     {achievements.map((achievement) => (
                       <AchievementCard
-                        key={achievement.id}
                         achievement={achievement}
                         onEdit={() => console.log("Edit", achievement.id)}
                         onDelete={() => setAchievements(prev => prev.filter(a => a.id !== achievement.id))}

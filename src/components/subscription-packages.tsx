@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   DollarSign, 
@@ -44,6 +44,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Progress } from "./ui/progress";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -193,6 +194,8 @@ function PackageCard({
   onToggleStatus: (id: string) => void;
   onDuplicate: (pkg: SubscriptionPackage) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const getTierIcon = (tier: string) => {
     switch (tier) {
       case "basic": return <Package className="w-5 h-5" />;
@@ -225,6 +228,7 @@ function PackageCard({
         pkg.isPopular ? 'ring-2 ring-blue-200' : ''
       } ${!pkg.isActive ? 'opacity-60' : ''}`}
       style={{ borderColor: pkg.isPopular ? "#3B82F6" : COLORS.lightGray }}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Popular Badge */}
       {pkg.isPopular && (
@@ -232,7 +236,7 @@ function PackageCard({
           className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full text-xs font-medium text-white"
           style={{ backgroundColor: "#3B82F6" }}
         >
-          Most Popular
+          {t("pages.subscriptionPackages.labels.mostPopular")}
         </div>
       )}
 
@@ -266,7 +270,9 @@ function PackageCard({
             onCheckedChange={() => onToggleStatus(pkg.id)}
           />
           <span className="text-xs" style={{ color: COLORS.dark + "60" }}>
-            {pkg.isActive ? "Active" : "Inactive"}
+            {pkg.isActive
+              ? t("pages.subscriptionPackages.labels.active")
+              : t("pages.subscriptionPackages.labels.inactive")}
           </span>
         </div>
       </div>
@@ -300,7 +306,7 @@ function PackageCard({
       {/* Key Features */}
       <div className="mb-6">
         <h4 className="text-sm font-medium mb-3" style={{ color: COLORS.dark }}>
-          Key Features ({includedFeatures.length})
+          {t("pages.subscriptionPackages.labels.keyFeatures")} ({includedFeatures.length})
         </h4>
         <div className="space-y-2">
           {includedFeatures.slice(0, 4).map((feature) => (
@@ -309,8 +315,13 @@ function PackageCard({
               <span className="text-sm" style={{ color: COLORS.dark + "80" }}>
                 {feature.name}
                 {feature.highlight && (
-                  <Badge variant="outline" className="ml-2 text-xs border-orange-300 text-orange-600">
-                    Premium
+                  <Badge
+                    variant="outline"
+                    className={`text-xs border-orange-300 text-orange-600 ${
+                      isRtl ? "mr-2" : "ml-2"
+                    }`}
+                  >
+                    {t("pages.subscriptionPackages.labels.premiumBadge")}
                   </Badge>
                 )}
               </span>
@@ -318,7 +329,9 @@ function PackageCard({
           ))}
           {includedFeatures.length > 4 && (
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              +{includedFeatures.length - 4} more features
+              {t("pages.subscriptionPackages.labels.moreFeatures", {
+                count: includedFeatures.length - 4,
+              })}
             </div>
           )}
         </div>
@@ -331,7 +344,7 @@ function PackageCard({
             {pkg.subscriberCount}
           </div>
           <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-            Subscribers
+            {t("pages.subscriptionPackages.labels.subscribers")}
           </div>
         </div>
         <div className="text-center">
@@ -339,7 +352,7 @@ function PackageCard({
             ${pkg.monthlyRevenue.toLocaleString()}
           </div>
           <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-            Revenue
+            {t("pages.subscriptionPackages.labels.revenue")}
           </div>
         </div>
         <div className="text-center">
@@ -347,7 +360,7 @@ function PackageCard({
             {pkg.conversionRate}%
           </div>
           <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-            Conversion
+            {t("pages.subscriptionPackages.labels.conversion")}
           </div>
         </div>
       </div>
@@ -382,9 +395,18 @@ function PackageCard({
 
       {/* Last Modified */}
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center gap-2 text-xs" style={{ color: COLORS.dark + "60" }}>
+        <div
+          className={`flex items-center gap-2 text-xs ${
+            isRtl ? "flex-row-reverse" : ""
+          }`}
+          style={{ color: COLORS.dark + "60" }}
+        >
           <Clock className="w-3 h-3" />
-          <span>Modified {pkg.lastModified.toLocaleDateString()}</span>
+          <span>
+            {t("pages.subscriptionPackages.labels.modifiedOn", {
+              date: pkg.lastModified.toLocaleDateString(),
+            })}
+          </span>
         </div>
       </div>
     </motion.div>
@@ -721,6 +743,7 @@ function PackageEditor({
 }
 
 function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <Card className="p-6">
@@ -733,13 +756,15 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Total Revenue
+              {t("pages.subscriptionPackages.analytics.totalRevenueTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               ${analytics.totalRevenue.toLocaleString()}
             </p>
             <p className="text-xs text-green-600">
-              +{analytics.growthRate}% this month
+              {t("pages.subscriptionPackages.analytics.totalRevenueChange", {
+                value: analytics.growthRate,
+              })}
             </p>
           </div>
         </div>
@@ -755,13 +780,13 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Total Subscribers
+              {t("pages.subscriptionPackages.analytics.totalSubscribersTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               {analytics.totalSubscribers.toLocaleString()}
             </p>
             <p className="text-xs text-green-600">
-              Active subscriptions
+              {t("pages.subscriptionPackages.analytics.totalSubscribersSubtitle")}
             </p>
           </div>
         </div>
@@ -777,13 +802,13 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Conversion Rate
+              {t("pages.subscriptionPackages.analytics.conversionRateTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               {analytics.conversionRate}%
             </p>
             <p className="text-xs text-green-600">
-              Above industry average
+              {t("pages.subscriptionPackages.analytics.conversionRateSubtitle")}
             </p>
           </div>
         </div>
@@ -799,13 +824,13 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Avg Revenue Per User
+              {t("pages.subscriptionPackages.analytics.arpuTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               ${analytics.averageRevenuePer}
             </p>
             <p className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Per month
+              {t("pages.subscriptionPackages.analytics.arpuSubtitle")}
             </p>
           </div>
         </div>
@@ -821,13 +846,13 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Growth Rate
+              {t("pages.subscriptionPackages.analytics.growthRateTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               +{analytics.growthRate}%
             </p>
             <p className="text-xs text-green-600">
-              Monthly growth
+              {t("pages.subscriptionPackages.analytics.growthRateSubtitle")}
             </p>
           </div>
         </div>
@@ -843,13 +868,13 @@ function AnalyticsOverview({ analytics }: { analytics: PackageAnalytics }) {
           </div>
           <div>
             <p className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Churn Rate
+              {t("pages.subscriptionPackages.analytics.churnRateTitle")}
             </p>
             <p className="text-2xl font-sans font-bold" style={{ color: COLORS.dark }}>
               {analytics.churnRate}%
             </p>
             <p className="text-xs text-red-600">
-              Monthly churn
+              {t("pages.subscriptionPackages.analytics.churnRateSubtitle")}
             </p>
           </div>
         </div>
@@ -864,6 +889,8 @@ export function SubscriptionPackages() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingPackage, setEditingPackage] = useState<SubscriptionPackage | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("overview");
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const handleCreatePackage = () => {
     setEditingPackage(undefined);
@@ -927,15 +954,18 @@ export function SubscriptionPackages() {
   const inactivePackages = packages.filter(pkg => !pkg.isActive);
 
   return (
-    <div className="space-y-8">
+    <div
+      className={`space-y-8 ${isRtl ? "rtl" : ""}`}
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Subscription Packages
+            {t("pages.subscriptionPackages.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Create and manage subscription tiers to monetize your analysis services
+            {t("pages.subscriptionPackages.subtitle")}
           </p>
         </div>
         
@@ -945,16 +975,18 @@ export function SubscriptionPackages() {
           style={{ backgroundColor: COLORS.primary }}
         >
           <Plus className="w-4 h-4" />
-          Create Package
+          {t("pages.subscriptionPackages.header.create")}
         </Button>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="packages">Packages ({packages.length})</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="overview">{t("pages.subscriptionPackages.tabs.overview")}</TabsTrigger>
+          <TabsTrigger value="packages">
+            {t("pages.subscriptionPackages.tabs.packages")} ({packages.length})
+          </TabsTrigger>
+          <TabsTrigger value="analytics">{t("pages.subscriptionPackages.tabs.analytics")}</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -965,7 +997,7 @@ export function SubscriptionPackages() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
               <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
-                Package Performance
+                {t("pages.subscriptionPackages.overview.performanceTitle")}
               </h3>
               <div className="space-y-4">
                 {packages.map((pkg) => (
@@ -994,17 +1026,17 @@ export function SubscriptionPackages() {
 
             <Card className="p-6">
               <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
-                Recent Activity
+                {t("pages.subscriptionPackages.overview.recentActivityTitle")}
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
                   <div className="flex-1">
                     <p className="text-sm font-medium" style={{ color: COLORS.dark }}>
-                      New subscriber to Professional plan
+                      {t("pages.subscriptionPackages.overview.activity1")}
                     </p>
                     <p className="text-xs" style={{ color: COLORS.dark + "60" }}>
-                      2 minutes ago
+                      {t("dashboard.recentActivity.ago2m")}
                     </p>
                   </div>
                 </div>
@@ -1012,10 +1044,10 @@ export function SubscriptionPackages() {
                   <div className="w-2 h-2 rounded-full bg-blue-500" />
                   <div className="flex-1">
                     <p className="text-sm font-medium" style={{ color: COLORS.dark }}>
-                      VIP Elite package updated
+                      {t("pages.subscriptionPackages.overview.activity2")}
                     </p>
                     <p className="text-xs" style={{ color: COLORS.dark + "60" }}>
-                      1 hour ago
+                      {t("dashboard.recentActivity.ago1h")}
                     </p>
                   </div>
                 </div>
@@ -1023,10 +1055,10 @@ export function SubscriptionPackages() {
                   <div className="w-2 h-2 rounded-full bg-orange-500" />
                   <div className="flex-1">
                     <p className="text-sm font-medium" style={{ color: COLORS.dark }}>
-                      Starter package trial expired
+                      {t("pages.subscriptionPackages.overview.activity3")}
                     </p>
                     <p className="text-xs" style={{ color: COLORS.dark + "60" }}>
-                      3 hours ago
+                      {t("dashboard.recentActivity.ago3h")}
                     </p>
                   </div>
                 </div>
@@ -1041,6 +1073,7 @@ export function SubscriptionPackages() {
           {activePackages.length > 0 && (
             <div>
               <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
+                {/* "Active Packages" label left as-is for now; can be localized later if needed */}
                 Active Packages ({activePackages.length})
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -1049,7 +1082,6 @@ export function SubscriptionPackages() {
                     .sort((a, b) => a.priority - b.priority)
                     .map((pkg) => (
                     <PackageCard
-                      key={pkg.id}
                       package={pkg}
                       onEdit={handleEditPackage}
                       onDelete={handleDeletePackage}
@@ -1066,13 +1098,13 @@ export function SubscriptionPackages() {
           {inactivePackages.length > 0 && (
             <div>
               <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
+                {/* "Inactive Packages" label left as-is for now; can be localized later if needed */}
                 Inactive Packages ({inactivePackages.length})
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 <AnimatePresence>
                   {inactivePackages.map((pkg) => (
                     <PackageCard
-                      key={pkg.id}
                       package={pkg}
                       onEdit={handleEditPackage}
                       onDelete={handleDeletePackage}
@@ -1090,17 +1122,17 @@ export function SubscriptionPackages() {
             <div className="text-center py-12">
               <Package className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
               <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-                No packages yet
+                {t("pages.subscriptionPackages.labels.noPackagesTitle")}
               </h3>
               <p className="text-sm mb-4" style={{ color: COLORS.dark + "80" }}>
-                Create your first subscription package to start monetizing your analysis services.
+                {t("pages.subscriptionPackages.labels.noPackagesBody")}
               </p>
               <Button 
                 onClick={handleCreatePackage}
                 style={{ backgroundColor: COLORS.primary }}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Create First Package
+                {t("pages.subscriptionPackages.labels.createFirstPackage")}
               </Button>
             </div>
           )}
@@ -1113,8 +1145,7 @@ export function SubscriptionPackages() {
           <Alert>
             <BarChart3 className="w-4 h-4" />
             <AlertDescription>
-              Detailed analytics charts and reports are coming soon. You'll be able to track conversion funnels, 
-              subscriber lifetime value, and package performance over time.
+              {t("pages.subscriptionPackages.analytics.comingSoon")}
             </AlertDescription>
           </Alert>
         </TabsContent>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Video,
@@ -68,6 +68,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useTranslation } from "react-i18next";
 import { Progress } from "./ui/progress";
 import { Slider } from "./ui/slider";
 
@@ -1032,6 +1033,7 @@ export function LiveStreaming() {
   const [isStreamActive, setIsStreamActive] = useState(true); // Simulate active stream
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { t } = useTranslation();
 
   const handleCreateStream = () => {
     setEditingStream(undefined);
@@ -1113,10 +1115,10 @@ export function LiveStreaming() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
         <div>
           <h1 className="font-serif font-bold text-2xl lg:text-3xl" style={{ color: COLORS.dark }}>
-            Live Streaming
+            {t("pages.liveStreaming.title")}
           </h1>
           <p className="text-sm lg:text-base" style={{ color: COLORS.dark + "80" }}>
-            Stream live market analysis, educational content, and engage with your audience in real-time
+            {t("pages.liveStreaming.subtitle")}
           </p>
         </div>
         
@@ -1385,7 +1387,6 @@ export function LiveStreaming() {
             <AnimatePresence>
               {filteredStreams.map((stream) => (
                 <StreamCard
-                  key={stream.id}
                   stream={stream}
                   onEdit={handleEditStream}
                   onDelete={handleDeleteStream}

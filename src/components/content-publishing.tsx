@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   FileText, 
@@ -65,7 +65,7 @@ import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Progress } from "./ui/progress";
-import { unsplash_tool } from "../tools/unsplash";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -226,6 +226,8 @@ function ContentCard({
   onPublish: (id: string) => void;
   onArchive: (id: string) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const getStatusColor = (status: string) => {
     switch (status) {
       case "published": return "#10B981";
@@ -255,6 +257,7 @@ function ContentCard({
       whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
       className="bg-white rounded-xl p-6 border shadow-sm transition-all duration-300"
       style={{ borderColor: COLORS.lightGray }}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -326,7 +329,11 @@ function ContentCard({
         <div className="flex items-center gap-4 text-xs mb-3" style={{ color: COLORS.dark + "60" }}>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span>{content.readTime} min read</span>
+            <span>
+              {t("pages.contentPublishing.card.minRead", {
+                minutes: content.readTime,
+              })}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
@@ -335,7 +342,7 @@ function ContentCard({
           {content.isPremium && (
             <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-600">
               <Star className="w-3 h-3 mr-1" />
-              Premium
+              {t("pages.contentPublishing.card.premiumBadge")}
             </Badge>
           )}
         </div>
@@ -367,7 +374,7 @@ function ContentCard({
               {content.views.toLocaleString()}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Views
+              {t("pages.contentPublishing.card.views")}
             </div>
           </div>
           <div className="text-center">
@@ -375,7 +382,7 @@ function ContentCard({
               {content.likes}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Likes
+              {t("pages.contentPublishing.card.likes")}
             </div>
           </div>
           <div className="text-center">
@@ -383,7 +390,7 @@ function ContentCard({
               {content.comments}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Comments
+              {t("pages.contentPublishing.card.comments")}
             </div>
           </div>
           <div className="text-center">
@@ -391,7 +398,7 @@ function ContentCard({
               {content.shares}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Shares
+              {t("pages.contentPublishing.card.shares")}
             </div>
           </div>
         </div>
@@ -402,7 +409,10 @@ function ContentCard({
         <Alert className="mb-4">
           <Calendar className="w-4 h-4" />
           <AlertDescription>
-            Scheduled to publish on {content.scheduledAt.toLocaleDateString()} at {content.scheduledAt.toLocaleTimeString()}
+            {t("pages.contentPublishing.card.scheduled", {
+              date: content.scheduledAt.toLocaleDateString(),
+              time: content.scheduledAt.toLocaleTimeString(),
+            })}
           </AlertDescription>
         </Alert>
       )}
@@ -416,7 +426,7 @@ function ContentCard({
             onClick={() => onPublish(content.id)}
           >
             <Send className="w-4 h-4 mr-1" />
-            Publish Now
+            {t("pages.contentPublishing.card.publishNow")}
           </Button>
         ) : content.status === "published" ? (
           <Button 
@@ -425,7 +435,7 @@ function ContentCard({
             className="flex-1"
           >
             <ExternalLink className="w-4 h-4 mr-1" />
-            View Published
+            {t("pages.contentPublishing.card.viewPublished")}
           </Button>
         ) : (
           <Button 
@@ -435,7 +445,7 @@ function ContentCard({
             onClick={() => onEdit(content)}
           >
             <Edit3 className="w-4 h-4 mr-1" />
-            Edit Content
+            {t("pages.contentPublishing.card.editContent")}
           </Button>
         )}
       </div>
@@ -935,6 +945,8 @@ export function ContentPublishing() {
   const [filter, setFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const handleCreateContent = () => {
     setEditingContent(undefined);
@@ -1028,15 +1040,18 @@ export function ContentPublishing() {
   const averageReadTime = content.length > 0 ? content.reduce((sum, c) => sum + c.readTime, 0) / content.length : 0;
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Content Publishing
+            {t("pages.contentPublishing.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Create, manage, and publish educational content and market analysis
+            {t("pages.contentPublishing.subtitle")}
           </p>
         </div>
         
@@ -1046,7 +1061,7 @@ export function ContentPublishing() {
           style={{ backgroundColor: COLORS.primary }}
         >
           <Plus className="w-4 h-4" />
-          Create Content
+          {t("pages.contentPublishing.header.create")}
         </Button>
       </div>
 
@@ -1065,7 +1080,7 @@ export function ContentPublishing() {
                 {statusCounts.all}
               </p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Content
+                {t("pages.contentPublishing.stats.totalContent")}
               </p>
             </div>
           </div>
@@ -1079,7 +1094,7 @@ export function ContentPublishing() {
             <div>
               <p className="text-2xl font-bold text-green-600">{statusCounts.published}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Published
+                {t("pages.contentPublishing.stats.published")}
               </p>
             </div>
           </div>
@@ -1093,7 +1108,7 @@ export function ContentPublishing() {
             <div>
               <p className="text-2xl font-bold text-blue-600">{totalViews.toLocaleString()}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Views
+                {t("pages.contentPublishing.stats.totalViews")}
               </p>
             </div>
           </div>
@@ -1107,7 +1122,7 @@ export function ContentPublishing() {
             <div>
               <p className="text-2xl font-bold text-red-600">{totalLikes}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Likes
+                {t("pages.contentPublishing.stats.totalLikes")}
               </p>
             </div>
           </div>
@@ -1123,11 +1138,31 @@ export function ContentPublishing() {
             onChange={(e) => setFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Content ({statusCounts.all})</option>
-            <option value="published">Published ({statusCounts.published})</option>
-            <option value="draft">Drafts ({statusCounts.draft})</option>
-            <option value="scheduled">Scheduled ({statusCounts.scheduled})</option>
-            <option value="archived">Archived ({statusCounts.archived})</option>
+            <option value="all">
+              {t("pages.contentPublishing.filters.allContent", {
+                count: statusCounts.all,
+              })}
+            </option>
+            <option value="published">
+              {t("pages.contentPublishing.filters.published", {
+                count: statusCounts.published,
+              })}
+            </option>
+            <option value="draft">
+              {t("pages.contentPublishing.filters.draft", {
+                count: statusCounts.draft,
+              })}
+            </option>
+            <option value="scheduled">
+              {t("pages.contentPublishing.filters.scheduled", {
+                count: statusCounts.scheduled,
+              })}
+            </option>
+            <option value="archived">
+              {t("pages.contentPublishing.filters.archived", {
+                count: statusCounts.archived,
+              })}
+            </option>
           </select>
         </div>
         
@@ -1138,7 +1173,9 @@ export function ContentPublishing() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Categories</option>
+            <option value="all">
+              {t("pages.contentPublishing.filters.allCategories")}
+            </option>
             {CONTENT_CATEGORIES.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
@@ -1146,7 +1183,7 @@ export function ContentPublishing() {
         </div>
         
         <Input
-          placeholder="Search by title or tags..."
+          placeholder={t("pages.contentPublishing.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-xs"
@@ -1162,7 +1199,6 @@ export function ContentPublishing() {
         <AnimatePresence>
           {filteredContent.map((contentItem) => (
             <ContentCard
-              key={contentItem.id}
               content={contentItem}
               onEdit={handleEditContent}
               onDelete={handleDeleteContent}
@@ -1179,12 +1215,18 @@ export function ContentPublishing() {
         <div className="text-center py-12">
           <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            {filter === "all" ? "No content yet" : `No ${filter} content`}
+            {filter === "all"
+              ? t("pages.contentPublishing.emptyState.noContent")
+              : t("pages.contentPublishing.emptyState.noContentFiltered", {
+                  status: filter,
+                })}
           </h3>
           <p className="text-sm mb-4" style={{ color: COLORS.dark + "80" }}>
             {filter === "all" 
-              ? "Create your first piece of content to share insights with your audience"
-              : `No ${filter} content found. Try adjusting your filters.`
+              ? t("pages.contentPublishing.emptyState.body")
+              : t("pages.contentPublishing.emptyState.bodyFiltered", {
+                  status: filter,
+                })
             }
           </p>
           {filter === "all" && (
@@ -1193,7 +1235,7 @@ export function ContentPublishing() {
               style={{ backgroundColor: COLORS.primary }}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Create Your First Content
+              {t("pages.contentPublishing.emptyState.createFirstContent")}
             </Button>
           )}
         </div>

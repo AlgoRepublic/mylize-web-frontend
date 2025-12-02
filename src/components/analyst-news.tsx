@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Newspaper,
@@ -67,6 +67,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -282,6 +283,8 @@ function NewsCard({
   onToggleBreaking: (id: string) => void;
   compact?: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "urgent": return "#DC2626";
@@ -339,6 +342,7 @@ function NewsCard({
         borderColor: news.isBreaking ? "#EF4444" : news.isPinned ? COLORS.primary : COLORS.lightGray,
         borderWidth: news.isBreaking || news.isPinned ? "2px" : "1px"
       }}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Breaking/Pinned Indicators */}
       <div className="flex gap-2 mb-3">
@@ -351,13 +355,13 @@ function NewsCard({
               <Zap className="w-4 h-4 text-red-600" />
             </motion.div>
             <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50 font-semibold">
-              BREAKING NEWS
+              {t("pages.newsCenter.card.breakingBadge")}
             </Badge>
           </div>
         )}
         {news.isPinned && (
           <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50">
-            📌 Pinned
+            {t("pages.newsCenter.card.pinnedBadge")}
           </Badge>
         )}
       </div>
@@ -442,16 +446,24 @@ function NewsCard({
         <div className="flex items-center gap-4 text-xs mb-3" style={{ color: COLORS.dark + "60" }}>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span>{news.readTime} min read</span>
+            <span>
+              {t("pages.newsCenter.card.minRead", { minutes: news.readTime })}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Users className="w-3 h-3" />
-            <span>{news.subscribers.toLocaleString()} subscribers</span>
+            <span>
+              {t("pages.newsCenter.card.subscribers", {
+                count: news.subscribers.toLocaleString() as any,
+              })}
+            </span>
           </div>
           {news.marketImpact !== "none" && (
             <div className="flex items-center gap-1">
               <BarChart3 className="w-3 h-3" />
-              <span className="capitalize">{news.marketImpact} impact</span>
+              <span className="capitalize">
+                {news.marketImpact} {t("pages.newsCenter.card.impactSuffix")}
+              </span>
             </div>
           )}
         </div>
@@ -474,7 +486,7 @@ function NewsCard({
       {news.affectedPairs.length > 0 && (
         <div className="mb-4">
           <h5 className="text-xs font-medium mb-2" style={{ color: COLORS.dark + "80" }}>
-            AFFECTED PAIRS
+            {t("pages.newsCenter.card.affectedPairsTitle")}
           </h5>
           <div className="flex gap-1 flex-wrap">
             {news.affectedPairs.slice(0, compact ? 3 : 6).map((pair, index) => (
@@ -484,7 +496,9 @@ function NewsCard({
             ))}
             {news.affectedPairs.length > (compact ? 3 : 6) && (
               <Badge variant="outline" className="text-xs">
-                +{news.affectedPairs.length - (compact ? 3 : 6)}
+                {t("pages.newsCenter.card.morePairs", {
+                  count: news.affectedPairs.length - (compact ? 3 : 6),
+                })}
               </Badge>
             )}
           </div>
@@ -502,7 +516,9 @@ function NewsCard({
             ))}
             {news.tags.length > 4 && (
               <Badge variant="outline" className="text-xs">
-                +{news.tags.length - 4}
+                {t("pages.newsCenter.card.moreTags", {
+                  count: news.tags.length - 4,
+                })}
               </Badge>
             )}
           </div>
@@ -517,7 +533,7 @@ function NewsCard({
               {news.views.toLocaleString()}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Views
+              {t("pages.newsCenter.card.views")}
             </div>
           </div>
           <div className="text-center">
@@ -525,7 +541,7 @@ function NewsCard({
               {news.likes}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Likes
+              {t("pages.newsCenter.card.likes")}
             </div>
           </div>
           <div className="text-center">
@@ -533,7 +549,7 @@ function NewsCard({
               {news.comments}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Comments
+              {t("pages.newsCenter.card.comments")}
             </div>
           </div>
           <div className="text-center">
@@ -541,7 +557,7 @@ function NewsCard({
               {news.shares}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Shares
+              {t("pages.newsCenter.card.shares")}
             </div>
           </div>
         </div>
@@ -552,7 +568,10 @@ function NewsCard({
         <Alert className="mb-4">
           <Calendar className="w-4 h-4" />
           <AlertDescription>
-            Scheduled to publish on {news.scheduledAt.toLocaleDateString()} at {news.scheduledAt.toLocaleTimeString()}
+            {t("pages.newsCenter.card.scheduled", {
+              date: news.scheduledAt.toLocaleDateString(),
+              time: news.scheduledAt.toLocaleTimeString(),
+            })}
           </AlertDescription>
         </Alert>
       )}
@@ -565,13 +584,13 @@ function NewsCard({
             style={{ backgroundColor: COLORS.primary }}
           >
             <Send className="w-4 h-4 mr-1" />
-            Publish News
+            {t("pages.newsCenter.card.publishNews")}
           </Button>
         ) : news.status === "published" ? (
           <div className="flex gap-2 flex-1">
             <Button size="sm" variant="outline" className="flex-1">
               <ExternalLink className="w-4 h-4 mr-1" />
-              View Live
+              {t("pages.newsCenter.card.viewLive")}
             </Button>
             <Button 
               size="sm" 
@@ -590,7 +609,7 @@ function NewsCard({
             onClick={() => onEdit(news)}
           >
             <Edit3 className="w-4 h-4 mr-1" />
-            Edit News
+            {t("pages.newsCenter.card.editNews")}
           </Button>
         )}
       </div>
@@ -1167,6 +1186,8 @@ export function AnalystNews() {
   const [urgencyFilter, setUrgencyFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const handleCreateNews = () => {
     setEditingNews(undefined);
@@ -1271,15 +1292,18 @@ export function AnalystNews() {
   const subscriberReach = news.length > 0 ? news[0].subscribers : 0;
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Analyst News Center
+            {t("pages.newsCenter.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Create and manage news updates, market alerts, and insights for your subscribers
+            {t("pages.newsCenter.subtitle")}
           </p>
         </div>
         
@@ -1289,7 +1313,7 @@ export function AnalystNews() {
           style={{ backgroundColor: COLORS.primary }}
         >
           <Plus className="w-4 h-4" />
-          Create News
+          {t("pages.newsCenter.header.create")}
         </Button>
       </div>
 
@@ -1308,7 +1332,7 @@ export function AnalystNews() {
                 {statusCounts.all}
               </p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total News
+                {t("pages.newsCenter.stats.totalNews")}
               </p>
             </div>
           </div>
@@ -1322,7 +1346,7 @@ export function AnalystNews() {
             <div>
               <p className="text-2xl font-bold text-green-600">{statusCounts.published}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Published
+                {t("pages.newsCenter.stats.published")}
               </p>
             </div>
           </div>
@@ -1336,7 +1360,7 @@ export function AnalystNews() {
             <div>
               <p className="text-2xl font-bold text-blue-600">{totalViews.toLocaleString()}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Views
+                {t("pages.newsCenter.stats.totalViews")}
               </p>
             </div>
           </div>
@@ -1350,7 +1374,7 @@ export function AnalystNews() {
             <div>
               <p className="text-2xl font-bold text-purple-600">{subscriberReach.toLocaleString()}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Subscribers
+                {t("pages.newsCenter.stats.subscribers")}
               </p>
             </div>
           </div>
@@ -1367,12 +1391,24 @@ export function AnalystNews() {
               onChange={(e) => setFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
             >
-              <option value="all">All News ({statusCounts.all})</option>
-              <option value="published">Published ({statusCounts.published})</option>
-              <option value="draft">Drafts ({statusCounts.draft})</option>
-              <option value="scheduled">Scheduled ({statusCounts.scheduled})</option>
-              <option value="breaking">Breaking ({statusCounts.breaking})</option>
-              <option value="pinned">Pinned ({statusCounts.pinned})</option>
+              <option value="all">
+                {t("pages.newsCenter.filters.allNews", { count: statusCounts.all })}
+              </option>
+              <option value="published">
+                {t("pages.newsCenter.filters.published", { count: statusCounts.published })}
+              </option>
+              <option value="draft">
+                {t("pages.newsCenter.filters.draft", { count: statusCounts.draft })}
+              </option>
+              <option value="scheduled">
+                {t("pages.newsCenter.filters.scheduled", { count: statusCounts.scheduled })}
+              </option>
+              <option value="breaking">
+                {t("pages.newsCenter.filters.breaking", { count: statusCounts.breaking })}
+              </option>
+              <option value="pinned">
+                {t("pages.newsCenter.filters.pinned", { count: statusCounts.pinned })}
+              </option>
             </select>
           </div>
           
@@ -1381,7 +1417,9 @@ export function AnalystNews() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Categories</option>
+            <option value="all">
+              {t("pages.newsCenter.filters.allCategories")}
+            </option>
             {NEWS_CATEGORIES.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
@@ -1392,17 +1430,27 @@ export function AnalystNews() {
             onChange={(e) => setUrgencyFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Priorities</option>
-            <option value="urgent">Urgent</option>
-            <option value="high">High Priority</option>
-            <option value="medium">Medium Priority</option>
-            <option value="low">Low Priority</option>
+            <option value="all">
+              {t("pages.newsCenter.filters.allPriorities")}
+            </option>
+            <option value="urgent">
+              {t("pages.newsCenter.filters.urgent")}
+            </option>
+            <option value="high">
+              {t("pages.newsCenter.filters.high")}
+            </option>
+            <option value="medium">
+              {t("pages.newsCenter.filters.medium")}
+            </option>
+            <option value="low">
+              {t("pages.newsCenter.filters.low")}
+            </option>
           </select>
         </div>
 
         <div className="flex items-center justify-between">
           <Input
-            placeholder="Search news by title or tags..."
+            placeholder={t("pages.newsCenter.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="max-w-xs"
@@ -1440,7 +1488,6 @@ export function AnalystNews() {
         <AnimatePresence>
           {filteredNews.map((newsItem) => (
             <NewsCard
-              key={newsItem.id}
               news={newsItem}
               onEdit={handleEditNews}
               onDelete={handleDeleteNews}
@@ -1458,12 +1505,18 @@ export function AnalystNews() {
         <div className="text-center py-12">
           <Newspaper className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            {filter === "all" ? "No news articles yet" : `No ${filter} news articles`}
+            {filter === "all"
+              ? t("pages.newsCenter.emptyState.noNews")
+              : t("pages.newsCenter.emptyState.noNewsFiltered", {
+                  status: filter,
+                })}
           </h3>
           <p className="text-sm mb-4" style={{ color: COLORS.dark + "80" }}>
             {filter === "all" 
-              ? "Create your first news article to share market insights with your subscribers"
-              : `No ${filter} news articles found. Try adjusting your filters.`
+              ? t("pages.newsCenter.emptyState.body")
+              : t("pages.newsCenter.emptyState.bodyFiltered", {
+                  status: filter,
+                })
             }
           </p>
           {filter === "all" && (
@@ -1472,7 +1525,7 @@ export function AnalystNews() {
               style={{ backgroundColor: COLORS.primary }}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Create Your First News
+              {t("pages.newsCenter.emptyState.createFirstNews")}
             </Button>
           )}
         </div>

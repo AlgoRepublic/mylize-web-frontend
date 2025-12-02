@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   TrendingUp, 
@@ -46,7 +46,8 @@ import { Separator } from "./ui/separator";
 import { Switch } from "./ui/switch";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { unsplash_tool } from "../tools/unsplash";
+// import { unsplash_tool } from "../tools/unsplash";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -198,6 +199,8 @@ function SignalCard({
   onPublish: (id: string) => void;
   onDuplicate: (signal: Signal) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "#10B981";
@@ -234,6 +237,7 @@ function SignalCard({
       whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
       className="bg-white rounded-xl p-6 border shadow-sm transition-all duration-300"
       style={{ borderColor: signal.status === "critical" ? "#EF4444" : COLORS.lightGray }}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -271,7 +275,7 @@ function SignalCard({
                          signal.riskLevel === "medium" ? "#F59E0B" : "#10B981"
                 }}
               >
-                {signal.riskLevel} Risk
+                {signal.riskLevel} {t("pages.signalCenter.card.riskSuffix")}
               </Badge>
             </div>
           </div>
@@ -334,7 +338,7 @@ function SignalCard({
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium" style={{ color: COLORS.dark + "80" }}>
-              Current P&L
+              {t("pages.signalCenter.card.currentPnL")}
             </span>
             <div className="text-right">
               <div 
@@ -357,7 +361,9 @@ function SignalCard({
       {/* Take Profits */}
       <div className="mb-4">
         <h5 className="text-xs font-medium mb-2" style={{ color: COLORS.dark + "80" }}>
-          TAKE PROFIT LEVELS ({signal.takeProfits.length})
+          {t("pages.signalCenter.card.tpLevelsTitle", {
+            count: signal.takeProfits.length,
+          })}
         </h5>
         <div className="space-y-1">
           {signal.takeProfits.slice(0, 2).map((tp) => (
@@ -372,13 +378,17 @@ function SignalCard({
           ))}
           {signal.takeProfits.length > 2 && (
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              +{signal.takeProfits.length - 2} more levels
+              {t("pages.signalCenter.card.moreLevels", {
+                count: signal.takeProfits.length - 2,
+              })}
             </div>
           )}
         </div>
         
         <div className="mt-2 text-sm">
-          <span style={{ color: COLORS.dark + "60" }}>SL: </span>
+          <span style={{ color: COLORS.dark + "60" }}>
+            {t("pages.signalCenter.card.slLabel")}{" "}
+          </span>
           <span style={{ color: "#EF4444" }}>{signal.stopLoss}</span>
         </div>
       </div>
@@ -428,7 +438,7 @@ function SignalCard({
             onClick={() => onPublish(signal.id)}
           >
             <Send className="w-4 h-4 mr-1" />
-            Publish Signal
+            {t("pages.signalCenter.card.publishSignal")}
           </Button>
         ) : (
           <Button 
@@ -437,20 +447,31 @@ function SignalCard({
             className="flex-1"
           >
             <ExternalLink className="w-4 h-4 mr-1" />
-            View Details
+            {t("pages.signalCenter.card.viewDetails")}
           </Button>
         )}
       </div>
 
       {/* Time Stamp */}
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs" style={{ color: COLORS.dark + "60" }}>
+        <div
+          className="flex items-center justify-between text-xs"
+          style={{ color: COLORS.dark + "60" }}
+        >
           <div className="flex items-center gap-2">
             <Clock className="w-3 h-3" />
-            <span>Created {signal.createdAt.toLocaleDateString()}</span>
+            <span>
+              {t("pages.signalCenter.card.createdOn", {
+                date: signal.createdAt.toLocaleDateString(),
+              })}
+            </span>
           </div>
           {signal.publishedAt && (
-            <span>Published {signal.publishedAt.toLocaleDateString()}</span>
+            <span>
+              {t("pages.signalCenter.card.publishedOn", {
+                date: signal.publishedAt.toLocaleDateString(),
+              })}
+            </span>
           )}
         </div>
       </div>
@@ -1013,6 +1034,8 @@ export function SignalCenter() {
   const [editingSignal, setEditingSignal] = useState<Signal | undefined>(undefined);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const handleCreateSignal = () => {
     setEditingSignal(undefined);
@@ -1086,15 +1109,18 @@ export function SignalCenter() {
   };
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Signal Center
+            {t("pages.signalCenter.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Create, manage, and publish your trading signals with multi-level take profits
+            {t("pages.signalCenter.subtitle")}
           </p>
         </div>
         
@@ -1104,7 +1130,7 @@ export function SignalCenter() {
           style={{ backgroundColor: COLORS.primary }}
         >
           <Plus className="w-4 h-4" />
-          Create Signal
+          {t("pages.signalCenter.header.create")}
         </Button>
       </div>
 
@@ -1123,7 +1149,7 @@ export function SignalCenter() {
                 {statusCounts.all}
               </p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Signals
+                {t("pages.signalCenter.stats.totalSignals")}
               </p>
             </div>
           </div>
@@ -1137,7 +1163,7 @@ export function SignalCenter() {
             <div>
               <p className="text-2xl font-bold text-green-600">{statusCounts.active}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Active Signals
+                {t("pages.signalCenter.stats.activeSignals")}
               </p>
             </div>
           </div>
@@ -1151,7 +1177,7 @@ export function SignalCenter() {
             <div>
               <p className="text-2xl font-bold text-gray-600">{statusCounts.draft}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Draft Signals
+                {t("pages.signalCenter.stats.draftSignals")}
               </p>
             </div>
           </div>
@@ -1165,7 +1191,7 @@ export function SignalCenter() {
             <div>
               <p className="text-2xl font-bold text-blue-600">{statusCounts.closed}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Closed Signals
+                {t("pages.signalCenter.stats.closedSignals")}
               </p>
             </div>
           </div>
@@ -1181,15 +1207,23 @@ export function SignalCenter() {
             onChange={(e) => setFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Signals ({statusCounts.all})</option>
-            <option value="active">Active ({statusCounts.active})</option>
-            <option value="draft">Drafts ({statusCounts.draft})</option>
-            <option value="closed">Closed ({statusCounts.closed})</option>
+            <option value="all">
+              {t("pages.signalCenter.filters.all", { count: statusCounts.all })}
+            </option>
+            <option value="active">
+              {t("pages.signalCenter.filters.active", { count: statusCounts.active })}
+            </option>
+            <option value="draft">
+              {t("pages.signalCenter.filters.draft", { count: statusCounts.draft })}
+            </option>
+            <option value="closed">
+              {t("pages.signalCenter.filters.closed", { count: statusCounts.closed })}
+            </option>
           </select>
         </div>
         
         <Input
-          placeholder="Search pairs..."
+          placeholder={t("pages.signalCenter.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-xs"
@@ -1204,7 +1238,6 @@ export function SignalCenter() {
         <AnimatePresence>
           {filteredSignals.map((signal) => (
             <SignalCard
-              key={signal.id}
               signal={signal}
               onEdit={handleEditSignal}
               onDelete={handleDeleteSignal}
@@ -1220,12 +1253,18 @@ export function SignalCenter() {
         <div className="text-center py-12">
           <Target className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            {filter === "all" ? "No signals yet" : `No ${filter} signals`}
+            {filter === "all"
+              ? t("pages.signalCenter.emptyState.noSignals")
+              : t("pages.signalCenter.emptyState.noSignalsFiltered", {
+                  status: filter,
+                })}
           </h3>
           <p className="text-sm mb-4" style={{ color: COLORS.dark + "80" }}>
             {filter === "all" 
-              ? "Create your first trading signal with multi-level take profits"
-              : `No ${filter} signals found. Try adjusting your filters.`
+              ? t("pages.signalCenter.emptyState.body")
+              : t("pages.signalCenter.emptyState.bodyFiltered", {
+                  status: filter,
+                })
             }
           </p>
           {filter === "all" && (
@@ -1234,7 +1273,7 @@ export function SignalCenter() {
               style={{ backgroundColor: COLORS.primary }}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Create Your First Signal
+              {t("pages.signalCenter.emptyState.createFirstSignal")}
             </Button>
           )}
         </div>

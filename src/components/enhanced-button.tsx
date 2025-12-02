@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 
 interface EnhancedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost";

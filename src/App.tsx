@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./components/sidebar";
 import { AnalystDashboard } from "./components/analyst-dashboard";
 import { CriticalAlerts } from "./components/critical-alerts";

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { 
   TrendingUp, 
@@ -21,6 +21,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -378,6 +379,7 @@ export function ActiveSignalsMonitor() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isRealTime, setIsRealTime] = useState(true);
+  const { t } = useTranslation();
 
   // Simulate real-time updates
   useEffect(() => {
@@ -446,10 +448,10 @@ export function ActiveSignalsMonitor() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Active Signals Monitor
+            {t("pages.activeSignals.title")}
           </h2>
           <p className="text-sm" style={{ color: COLORS.dark + "80" }}>
-            Real-time monitoring with problem detection
+            {t("pages.activeSignals.subtitle")}
           </p>
         </div>
         
@@ -550,7 +552,6 @@ export function ActiveSignalsMonitor() {
       >
         {filteredSignals.map((signal) => (
           <SignalCard
-            key={signal.id}
             signal={signal}
             onQuickAction={handleQuickAction}
           />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Building2, 
@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Alert, AlertDescription } from "./ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Label } from "./ui/label";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -188,6 +189,7 @@ interface CompanyCardProps {
 }
 
 function CompanyCard({ company, onRequestJoin, hasExistingRequest = false, isAssociated = false }: CompanyCardProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       layout
@@ -285,7 +287,7 @@ function CompanyCard({ company, onRequestJoin, hasExistingRequest = false, isAss
         
         <Button size="sm" variant="outline">
           <Eye className="w-4 h-4 mr-1" />
-          View Details
+          {t("pages.companyAssociation.viewDetails")}
         </Button>
         
         {company.website && (
@@ -666,6 +668,7 @@ export function CompanyAssociation() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{id: string, name: string} | null>(null);
   const [activeTab, setActiveTab] = useState("discover");
+  const { t } = useTranslation();
 
   const handleRequestJoin = (companyId: string) => {
     const company = companies.find(c => c.id === companyId);
@@ -720,10 +723,10 @@ export function CompanyAssociation() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Company Association
+            {t("pages.companyAssociation.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Connect with companies to enhance your professional profile and access exclusive opportunities
+            {t("pages.companyAssociation.subtitle")}
           </p>
         </div>
       </div>
@@ -805,7 +808,6 @@ export function CompanyAssociation() {
               <AnimatePresence>
                 {filteredCompanies.map((company) => (
                   <CompanyCard
-                    key={company.id}
                     company={company}
                     onRequestJoin={handleRequestJoin}
                     hasExistingRequest={hasRequestForCompany(company.id)}
@@ -846,7 +848,6 @@ export function CompanyAssociation() {
                 <div className="space-y-4">
                   {pendingRequests.map((request) => (
                     <RequestCard
-                      key={request.id}
                       request={request}
                       onCancel={handleCancelRequest}
                     />
@@ -863,7 +864,7 @@ export function CompanyAssociation() {
                 </h3>
                 <div className="space-y-4">
                   {approvedRequests.map((request) => (
-                    <RequestCard key={request.id} request={request} />
+                    <RequestCard request={request} />
                   ))}
                 </div>
               </div>
@@ -878,7 +879,6 @@ export function CompanyAssociation() {
                 <div className="space-y-4">
                   {rejectedRequests.map((request) => (
                     <RequestCard 
-                      key={request.id} 
                       request={request}
                       onResubmit={() => handleRequestJoin(request.companyId)}
                     />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Bell, Search, Globe, Plus, TrendingUp, AlertTriangle, Activity, DollarSign, Shield, Building2, Users } from "lucide-react";
 import { Button } from "./ui/button";
@@ -22,6 +22,7 @@ import { KYCVerification } from "./kyc-verification";
 import { CompanyAssociation } from "./company-association";
 import { ProfileBranding } from "./profile-branding";
 import { SubscriptionPackages } from "./subscription-packages";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -36,9 +37,21 @@ interface DashboardHeaderProps {
   showSearch?: boolean;
   showLanguage?: boolean;
   actions?: React.ReactNode;
+  onLanguageChange?: (lng: string) => void;
+  currentLanguage?: string;
 }
 
-function DashboardHeader({ title, subtitle, showSearch = true, showLanguage = true, actions }: DashboardHeaderProps) {
+function DashboardHeader({ title, subtitle, showSearch = true, showLanguage = true, actions, onLanguageChange, currentLanguage }: DashboardHeaderProps) {
+  const { t, i18n } = useTranslation();
+  const activeLang = currentLanguage || i18n.language || "en";
+  const isRtl = activeLang.startsWith("ar");
+
+  const handleLanguageToggle = () => {
+    const nextLng = activeLang.startsWith("ar") ? "en" : "ar";
+    i18n.changeLanguage(nextLng);
+    onLanguageChange?.(nextLng);
+  };
+
   return (
     <motion.div
       className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6 lg:mb-8 p-4 lg:p-6 bg-white rounded-xl shadow-sm border"
@@ -65,7 +78,7 @@ function DashboardHeader({ title, subtitle, showSearch = true, showLanguage = tr
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: COLORS.dark + "60" }} />
             <Input
-              placeholder="Search..."
+              placeholder={t("dashboard.searchPlaceholder")}
               className="pl-10 w-full sm:w-48 lg:w-64 border-gray-200 focus:border-orange-300"
             />
           </div>
@@ -73,9 +86,19 @@ function DashboardHeader({ title, subtitle, showSearch = true, showLanguage = tr
 
         <div className="flex items-center gap-2 lg:gap-4">
           {showLanguage && (
-            <Button variant="outline" size="sm" className="gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 flex-shrink-0"
+              type="button"
+              onClick={handleLanguageToggle}
+            >
               <Globe className="w-4 h-4" />
-              <span className="hidden sm:inline">EN</span>
+              <span className="hidden sm:inline">
+                {activeLang.startsWith("ar")
+                  ? t("common.languageCodeArabic")
+                  : t("common.languageCodeEnglish")}
+              </span>
             </Button>
           )}
 
@@ -85,7 +108,11 @@ function DashboardHeader({ title, subtitle, showSearch = true, showLanguage = tr
             style={{ backgroundColor: COLORS.primary }}
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+            <span
+              className={`absolute -top-1 ${
+                isRtl ? "-left-1" : "-right-1"
+              } w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white`}
+            >
               12
             </span>
           </Button>
@@ -165,8 +192,10 @@ interface AnalystDashboardProps {
 }
 
 export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Overview", isMobile = false, user, onNavigate }: AnalystDashboardProps) {
+  const { t, i18n } = useTranslation();
   const [currentView, setCurrentView] = useState(activeView);
   const [currentSubView, setCurrentSubView] = useState(activeSubView);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || "en");
 
   const handleNavigation = (section: string, subSection?: string) => {
     setCurrentView(section);
@@ -182,15 +211,27 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
     setCurrentSubView(activeSubView);
   }, [activeView, activeSubView]);
 
+  useEffect(() => {
+    setCurrentLanguage(i18n.language || "en");
+  }, [i18n.language]);
+
   const renderDashboardOverview = () => (
-    <div className="space-y-8">
+    <div className={`space-y-8 ${currentLanguage.startsWith("ar") ? "rtl" : ""}`}>
       <DashboardHeader
-        title={`Welcome back, ${user?.fullName?.split(' ')[0] || 'Analyst'}!`}
-        subtitle={`Here's what's happening with your ${user?.accountType === 'demo' ? 'demo' : 'analyst'} business today.`}
+        title={t("dashboard.welcome", {
+          name: user?.fullName?.split(" ")[0] || t("common.languageEnglish"),
+        })}
+        subtitle={
+          user?.accountType === "demo"
+            ? t("dashboard.subtitleDemo")
+            : t("dashboard.subtitleAnalyst")
+        }
+        onLanguageChange={setCurrentLanguage}
+        currentLanguage={currentLanguage}
         actions={
           <Button className="gap-2" style={{ backgroundColor: COLORS.primary }}>
             <Plus className="w-4 h-4" />
-            Quick Action
+            {t("dashboard.quickAction")}
           </Button>
         }
       />
@@ -198,16 +239,16 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
         <StatsCard
-          title="Active Subscriptions"
+          title={t("dashboard.metrics.activeSubscriptions")}
           value="1,234"
-          change="+12.5% from last month"
+          change={t("dashboard.metrics.activeSubscriptionsChange")}
           trend="up"
           icon={<Bell className="w-6 h-6" />}
         />
         <StatsCard
-          title="Open Signals"
+          title={t("dashboard.metrics.openSignals")}
           value="8"
-          change="3 closed today"
+          change={t("dashboard.metrics.openSignalsChange")}
           trend="neutral"
           icon={<motion.div
             animate={{ rotate: 360 }}
@@ -218,17 +259,17 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
           color="#8B5CF6"
         />
         <StatsCard
-          title="Consultation Bookings"
+          title={t("dashboard.metrics.consultationBookings")}
           value="15"
-          change="5 pending this week"
+          change={t("dashboard.metrics.consultationBookingsChange")}
           trend="up"
           icon={<Globe className="w-6 h-6" />}
           color="#10B981"
         />
         <StatsCard
-          title="Monthly Revenue"
+          title={t("dashboard.metrics.monthlyRevenue")}
           value="$12,450"
-          change="+8.2% from last month"
+          change={t("dashboard.metrics.monthlyRevenueChange")}
           trend="up"
           icon={<div className="text-2xl">💰</div>}
           color="#F59E0B"
@@ -239,22 +280,22 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
         <div className="xl:col-span-2">
           <AnimatedAreaChart 
-            title="Subscription Growth"
-            subtitle="Monthly subscriber acquisition"
+            title={t("dashboard.charts.subscriptionGrowthTitle")}
+            subtitle={t("dashboard.charts.subscriptionGrowthSubtitle")}
           />
         </div>
         <Statistics />
         <AnimatedLineChart 
-          title="Signal Performance"
-          subtitle="Success rate over time"
+          title={t("dashboard.charts.signalPerformanceTitle")}
+          subtitle={t("dashboard.charts.signalPerformanceSubtitle")}
         />
         <AnimatedBarChart 
-          title="Revenue Breakdown"
-          subtitle="By service type"
+          title={t("dashboard.charts.revenueBreakdownTitle")}
+          subtitle={t("dashboard.charts.revenueBreakdownSubtitle")}
         />
         <AnimatedPieChart 
-          title="Subscriber Distribution"
-          subtitle="By subscription type"
+          title={t("dashboard.charts.subscriberDistributionTitle")}
+          subtitle={t("dashboard.charts.subscriberDistributionSubtitle")}
         />
       </div>
 
@@ -267,14 +308,14 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
         transition={{ delay: 0.3, duration: 0.5 }}
       >
         <h3 className="text-lg font-serif font-semibold mb-4" style={{ color: COLORS.dark }}>
-          Recent Activity
+          {t("dashboard.recentActivityTitle")}
         </h3>
         <div className="space-y-3">
           {[
-            { type: "subscription", message: "New subscriber: Premium Package", time: "2 minutes ago", color: "#10B981" },
-            { type: "signal", message: "Signal closed: EUR/USD (+45 pips)", time: "1 hour ago", color: COLORS.primary },
-            { type: "consultation", message: "Consultation booked for tomorrow", time: "3 hours ago", color: "#8B5CF6" },
-            { type: "payout", message: "Monthly payout processed: $2,340", time: "1 day ago", color: "#F59E0B" }
+            { type: "subscription", message: t("dashboard.recentActivity.subscription"), time: t("dashboard.recentActivity.ago2m"), color: "#10B981" },
+            { type: "signal", message: t("dashboard.recentActivity.signal"), time: t("dashboard.recentActivity.ago1h"), color: COLORS.primary },
+            { type: "consultation", message: t("dashboard.recentActivity.consultation"), time: t("dashboard.recentActivity.ago3h"), color: "#8B5CF6" },
+            { type: "payout", message: t("dashboard.recentActivity.payout"), time: t("dashboard.recentActivity.ago1d"), color: "#F59E0B" }
           ].map((activity, index) => (
             <motion.div
               key={index}
@@ -305,8 +346,8 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
   const renderNotifications = () => (
     <div className="space-y-8">
       <DashboardHeader
-        title="Notification Center"
-        subtitle="Stay updated with all your important alerts and updates."
+        title={t("dashboard.notificationsComingSoonTitle")}
+        subtitle={t("dashboard.notificationsComingSoonSubtitle")}
       />
       
       <motion.div
@@ -318,10 +359,10 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
         <div className="text-center py-12">
           <Bell className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            Notification Center
+            {t("dashboard.notificationsComingSoonTitle")}
           </h3>
           <p className="text-sm font-sans" style={{ color: COLORS.dark + "80" }}>
-            This feature is coming soon. You'll be able to manage all your notifications here.
+            {t("dashboard.notificationsComingSoonBody")}
           </p>
         </div>
       </motion.div>
@@ -365,10 +406,10 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
   );
 
   const renderPrivateAccess = () => (
-    <div className="space-y-8">
+    <div className={`space-y-8 ${currentLanguage.startsWith("ar") ? "rtl" : ""}`}>
       <DashboardHeader
-        title="Private Access Control"
-        subtitle="Manage profile visibility and secret access codes."
+        title={t("pages.privateAccess.title")}
+        subtitle={t("pages.privateAccess.subtitle")}
       />
       
       <motion.div
@@ -380,10 +421,10 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
         <div className="text-center py-12">
           <AlertTriangle className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            Private Access Management
+            {t("pages.privateAccess.comingSoonTitle")}
           </h3>
           <p className="text-sm font-sans" style={{ color: COLORS.dark + "80" }}>
-            Coming soon - Set secret codes and control profile visibility.
+            {t("pages.privateAccess.comingSoonBody")}
           </p>
         </div>
       </motion.div>
@@ -411,10 +452,10 @@ export function AnalystDashboard({ activeView = "Dashboard", activeSubView = "Ov
           return renderSignalCenter();
         case "Signal Monitor":
           return (
-            <div className="space-y-8">
+            <div className={`space-y-8 ${currentLanguage.startsWith("ar") ? "rtl" : ""}`}>
               <DashboardHeader
-                title="Signal Monitor"
-                subtitle="Real-time monitoring with problem detection for active signals."
+                title={t("pages.activeSignals.title")}
+                subtitle={t("pages.activeSignals.subtitle")}
               />
               <ActiveSignalsMonitor />
             </div>

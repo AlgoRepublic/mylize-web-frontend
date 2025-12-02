@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, X, Eye, StopCircle, Clock } from "lucide-react";
 import { Button } from "./ui/button";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -31,6 +32,8 @@ interface CriticalAlertsProps {
 }
 
 export function CriticalAlerts({ onAlertAction, isMobile = false }: CriticalAlertsProps) {
+  const { i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const [alerts, setAlerts] = useState<CriticalAlert[]>([
     {
       id: "alert-001",
@@ -114,11 +117,15 @@ export function CriticalAlerts({ onAlertAction, isMobile = false }: CriticalAler
   if (alerts.length === 0) return null;
 
   return (
-    <div className={`fixed z-50 space-y-3 ${
-      isMobile 
-        ? "top-20 left-4 right-4" 
-        : "top-4 right-4 max-w-md"
-    }`}>
+    <div
+      className={`fixed z-50 space-y-3 ${
+        isMobile
+          ? "top-20 left-4 right-4"
+          : isRtl
+            ? "top-4 left-4 max-w-md"
+            : "top-4 right-4 max-w-md"
+      }`}
+    >
       <AnimatePresence>
         {alerts.map((alert) => (
           <motion.div
@@ -204,7 +211,9 @@ export function CriticalAlerts({ onAlertAction, isMobile = false }: CriticalAler
             {/* Pulsing indicator for critical alerts */}
             {alert.severity === "critical" && (
               <motion.div
-                className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
+                className={`absolute -top-1 ${
+                  isRtl ? "-left-1" : "-right-1"
+                } w-3 h-3 bg-red-500 rounded-full`}
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />

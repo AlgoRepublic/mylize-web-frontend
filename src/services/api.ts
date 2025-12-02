@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Type definition for Vite env variables to fix TS error
+interface ImportMetaEnv {
+  readonly VITE_API_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+const API_URL = (import.meta as unknown as ImportMeta).env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -28,8 +37,18 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Redirect to login on 401
-      window.location.href = '/login';
+      // Only redirect if not already on login/signup page and not during initial auth check
+      const currentPath = window.location.pathname;
+      const isAuthPage = currentPath === '/login' || currentPath === '/signup' || currentPath === '/';
+      const isAuthCheck = error.config?.url?.includes('/auth/me');
+      
+      // Don't redirect during initial auth check or if already on auth page
+      if (!isAuthCheck && !isAuthPage) {
+        // Small delay to prevent rapid redirects
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100);
+      }
     }
     return Promise.reject(error);
   }

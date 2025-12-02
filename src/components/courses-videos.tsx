@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   BookOpen,
@@ -59,8 +59,8 @@ import {
   Lock,
   Unlock,
   GraduationCap,
-  Certificate,
-  Progress as ProgressIcon,
+  // Certificate,
+  // Progress as ProgressIcon,
   Timer,
   PieChart,
   LineChart,
@@ -91,6 +91,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Progress } from "./ui/progress";
 import { Slider } from "./ui/slider";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -430,6 +431,8 @@ function CourseCard({
   onViewAnalytics: (course: Course) => void;
   compact?: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
   const getLevelColor = (level: string) => {
     switch (level) {
       case "beginner": return "#10B981";
@@ -452,7 +455,10 @@ function CourseCard({
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    if (hours > 0) {
+      return t("pages.coursesVideos.card.duration", { hours, minutes: mins });
+    }
+    return t("pages.coursesVideos.card.durationMinutesOnly", { minutes: mins });
   };
 
   return (
@@ -464,6 +470,7 @@ function CourseCard({
       whileHover={{ y: -4, boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.1)" }}
       className={`bg-white rounded-xl border shadow-sm transition-all duration-300 overflow-hidden ${compact ? 'p-4' : ''}`}
       style={{ borderColor: COLORS.lightGray }}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Course Thumbnail */}
       <div className={`relative ${compact ? 'h-32' : 'h-48'}`}>
@@ -506,7 +513,7 @@ function CourseCard({
         <div className="absolute top-3 right-3">
           {course.isFree ? (
             <Badge className="bg-green-100 text-green-700 border-green-300">
-              FREE
+              {t("pages.coursesVideos.card.freeBadge")}
             </Badge>
           ) : (
             <Badge className="bg-white bg-opacity-90 text-gray-900">
@@ -550,7 +557,7 @@ function CourseCard({
             {course.isPremium && (
               <Badge variant="outline" className="border-yellow-300 text-yellow-600">
                 <Star className="w-3 h-3 mr-1" />
-                Premium
+                {t("pages.coursesVideos.card.premiumBadge")}
               </Badge>
             )}
           </div>
@@ -590,7 +597,7 @@ function CourseCard({
               {course.studentsEnrolled.toLocaleString()}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Students
+              {t("pages.coursesVideos.card.students")}
             </div>
           </div>
           <div className="text-center">
@@ -601,7 +608,7 @@ function CourseCard({
               </span>
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Rating
+              {t("pages.coursesVideos.card.rating")}
             </div>
           </div>
           <div className="text-center">
@@ -609,7 +616,7 @@ function CourseCard({
               {course.completionRate}%
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Completion
+              {t("pages.coursesVideos.card.completion")}
             </div>
           </div>
           <div className="text-center">
@@ -617,7 +624,7 @@ function CourseCard({
               ${course.revenue.toLocaleString()}
             </div>
             <div className="text-xs" style={{ color: COLORS.dark + "60" }}>
-              Revenue
+              {t("pages.coursesVideos.card.revenue")}
             </div>
           </div>
         </div>
@@ -626,24 +633,28 @@ function CourseCard({
         <div className="flex items-center gap-2 lg:gap-4 text-xs mb-4 flex-wrap" style={{ color: COLORS.dark + "60" }}>
           <div className="flex items-center gap-1">
             <Video className="w-3 h-3" />
-            <span>{course.lessons.length} lessons</span>
+            <span>
+              {t("pages.coursesVideos.card.lessons", {
+                count: course.lessons.length,
+              })}
+            </span>
           </div>
           {course.certificateEnabled && (
             <div className="flex items-center gap-1">
               <Award className="w-3 h-3" />
-              <span>Certificate</span>
+              <span>{t("pages.coursesVideos.card.certificate")}</span>
             </div>
           )}
           {course.downloadableResources && (
             <div className="flex items-center gap-1">
               <Download className="w-3 h-3" />
-              <span>Resources</span>
+              <span>{t("pages.coursesVideos.card.resources")}</span>
             </div>
           )}
           {course.hasQuiz && (
             <div className="flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" />
-              <span>Quiz</span>
+              <span>{t("pages.coursesVideos.card.quiz")}</span>
             </div>
           )}
         </div>
@@ -674,13 +685,13 @@ function CourseCard({
               style={{ backgroundColor: COLORS.primary }}
             >
               <Globe className="w-4 h-4 mr-1" />
-              Publish Course
+              {t("pages.coursesVideos.card.publishCourse")}
             </Button>
           ) : course.status === "published" ? (
             <div className="flex gap-2 flex-1">
               <Button size="sm" variant="outline" className="flex-1">
                 <ExternalLink className="w-4 h-4 mr-1" />
-                View Live
+                {t("pages.coursesVideos.card.viewLive")}
               </Button>
               <Button size="sm" variant="outline">
                 <Users className="w-4 h-4" />
@@ -694,7 +705,7 @@ function CourseCard({
               onClick={() => onEdit(course)}
             >
               <Edit3 className="w-4 h-4 mr-1" />
-              Edit Course
+              {t("pages.coursesVideos.card.editCourse")}
             </Button>
           )}
         </div>
@@ -1884,6 +1895,8 @@ export function CoursesVideos() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const { t, i18n } = useTranslation();
+  const isRtl = (i18n.language || "en").startsWith("ar");
 
   const handleCreateCourse = () => {
     setEditingCourse(undefined);
@@ -1979,15 +1992,18 @@ export function CoursesVideos() {
     : 0;
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.dark }}>
-            Courses & Videos
+            {t("pages.coursesVideos.title")}
           </h2>
           <p className="text-sm mt-1" style={{ color: COLORS.dark + "80" }}>
-            Create and manage educational courses with video lessons and interactive content
+            {t("pages.coursesVideos.subtitle")}
           </p>
         </div>
         
@@ -1997,7 +2013,7 @@ export function CoursesVideos() {
           style={{ backgroundColor: COLORS.primary }}
         >
           <Plus className="w-4 h-4" />
-          Create Course
+          {t("pages.coursesVideos.header.create")}
         </Button>
       </div>
 
@@ -2016,7 +2032,7 @@ export function CoursesVideos() {
                 {statusCounts.all}
               </p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Courses
+                {t("pages.coursesVideos.stats.totalCourses")}
               </p>
             </div>
           </div>
@@ -2030,7 +2046,7 @@ export function CoursesVideos() {
             <div>
               <p className="text-2xl font-bold text-blue-600">{totalStudents.toLocaleString()}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Students
+                {t("pages.coursesVideos.stats.totalStudents")}
               </p>
             </div>
           </div>
@@ -2044,7 +2060,7 @@ export function CoursesVideos() {
             <div>
               <p className="text-2xl font-bold text-green-600">${totalRevenue.toLocaleString()}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Total Revenue
+                {t("pages.coursesVideos.stats.totalRevenue")}
               </p>
             </div>
           </div>
@@ -2058,7 +2074,7 @@ export function CoursesVideos() {
             <div>
               <p className="text-2xl font-bold text-yellow-600">{averageRating.toFixed(1)}</p>
               <p className="text-sm" style={{ color: COLORS.dark + "60" }}>
-                Avg Rating
+                {t("pages.coursesVideos.stats.averageRating")}
               </p>
             </div>
           </div>
@@ -2075,11 +2091,31 @@ export function CoursesVideos() {
               onChange={(e) => setFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
             >
-              <option value="all">All Courses ({statusCounts.all})</option>
-              <option value="published">Published ({statusCounts.published})</option>
-              <option value="draft">Drafts ({statusCounts.draft})</option>
-              <option value="free">Free ({statusCounts.free})</option>
-              <option value="premium">Premium ({statusCounts.premium})</option>
+              <option value="all">
+                {t("pages.coursesVideos.filters.allCourses", {
+                  count: statusCounts.all,
+                })}
+              </option>
+              <option value="published">
+                {t("pages.coursesVideos.filters.published", {
+                  count: statusCounts.published,
+                })}
+              </option>
+              <option value="draft">
+                {t("pages.coursesVideos.filters.draft", {
+                  count: statusCounts.draft,
+                })}
+              </option>
+              <option value="free">
+                {t("pages.coursesVideos.filters.free", {
+                  count: statusCounts.free,
+                })}
+              </option>
+              <option value="premium">
+                {t("pages.coursesVideos.filters.premium", {
+                  count: statusCounts.premium,
+                })}
+              </option>
             </select>
           </div>
           
@@ -2088,7 +2124,9 @@ export function CoursesVideos() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Categories</option>
+            <option value="all">
+              {t("pages.coursesVideos.filters.allCategories")}
+            </option>
             {COURSE_CATEGORIES.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
@@ -2099,7 +2137,9 @@ export function CoursesVideos() {
             onChange={(e) => setLevelFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="all">All Levels</option>
+            <option value="all">
+              {t("pages.coursesVideos.filters.allLevels")}
+            </option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
@@ -2109,7 +2149,7 @@ export function CoursesVideos() {
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
           <Input
-            placeholder="Search courses by title or tags..."
+            placeholder={t("pages.coursesVideos.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full lg:max-w-xs"
@@ -2150,7 +2190,7 @@ export function CoursesVideos() {
         <AnimatePresence>
           {filteredCourses.map((course) => (
             <CourseCard
-              key={course.id}
+              // key={course.id}
               course={course}
               onEdit={handleEditCourse}
               onDelete={handleDeleteCourse}
@@ -2167,12 +2207,18 @@ export function CoursesVideos() {
         <div className="text-center py-12">
           <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: COLORS.dark + "40" }} />
           <h3 className="text-lg font-serif font-semibold mb-2" style={{ color: COLORS.dark }}>
-            {filter === "all" ? "No courses yet" : `No ${filter} courses`}
+            {filter === "all"
+              ? t("pages.coursesVideos.emptyState.noCourses")
+              : t("pages.coursesVideos.emptyState.noCoursesFiltered", {
+                  status: filter,
+                })}
           </h3>
           <p className="text-sm mb-4" style={{ color: COLORS.dark + "80" }}>
             {filter === "all" 
-              ? "Create your first course to start teaching and generating revenue"
-              : `No ${filter} courses found. Try adjusting your filters.`
+              ? t("pages.coursesVideos.emptyState.body")
+              : t("pages.coursesVideos.emptyState.bodyFiltered", {
+                  status: filter,
+                })
             }
           </p>
           {filter === "all" && (
@@ -2181,7 +2227,7 @@ export function CoursesVideos() {
               style={{ backgroundColor: COLORS.primary }}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Create Your First Course
+              {t("pages.coursesVideos.emptyState.createFirstCourse")}
             </Button>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Gift,
@@ -62,7 +62,8 @@ import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Textarea } from "./ui/textarea";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -89,7 +90,7 @@ interface DiscountCode {
   createdAt: Date;
   updatedAt: Date;
   revenue: number;
-  customersSaved: number[];
+  customersSaved: string[];
   conversionRate: number;
   tier?: "basic" | "premium" | "vip";
 }
@@ -841,6 +842,7 @@ export function DiscountCodes() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedCode, setSelectedCode] = useState<DiscountCode | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const { t } = useTranslation();
 
   const filteredCodes = discountCodes.filter(code => {
     const matchesSearch = code.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -856,8 +858,8 @@ export function DiscountCodes() {
 
   const handleCreateCode = (newCodeData: Partial<DiscountCode>) => {
     const newCode: DiscountCode = {
-      id: `dc-${Date.now()}`,
-      ...newCodeData as DiscountCode
+      ...newCodeData as DiscountCode,
+      id: `dc-${Date.now()}`
     };
     setDiscountCodes(prev => [newCode, ...prev]);
   };
@@ -892,10 +894,10 @@ export function DiscountCodes() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
         <div>
           <h1 className="font-serif font-bold text-2xl lg:text-3xl" style={{ color: COLORS.dark }}>
-            Discount Codes
+            {t("pages.discountCodes.title")}
           </h1>
           <p className="text-sm lg:text-base" style={{ color: COLORS.dark + "80" }}>
-            Create and manage promotional discount codes for your subscription packages
+            {t("pages.discountCodes.subtitle")}
           </p>
         </div>
         
@@ -1047,7 +1049,6 @@ export function DiscountCodes() {
         {filteredCodes.length > 0 ? (
           filteredCodes.map((code) => (
             <DiscountCodeCard
-              key={code.id}
               code={code}
               onEdit={(code) => console.log("Edit code", code)}
               onDelete={handleDeleteCode}
