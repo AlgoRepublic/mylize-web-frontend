@@ -1,12 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, TrendingUp, BarChart3 } from "lucide-react";
+import { Eye, EyeOff, Phone, Lock, ArrowRight, Shield, TrendingUp, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -22,24 +25,45 @@ interface LoginProps {
 export function AuthLogin({ onSwitchToSignup }: LoginProps) {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: "",
+    phone: "",
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill in all fields");
+    // Validate phone number
+    if (!formData.phone) {
+      toast.error("Please enter your phone number");
       return;
     }
 
+    // if (!isValidPhoneNumber(formData.phone)) {
+    //   setPhoneError("Please enter a valid phone number");
+    //   toast.error("Please enter a valid phone number");
+    //   return;
+    // }
+
+    if (!formData.password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
+    setPhoneError("");
     setIsLoading(true);
     
     try {
-      await login(formData);
+      await login({
+        phone: formData.phone,
+        password: formData.password,
+        platform: "web",
+        type: "analyst"
+      });
+      // Login successful - redirect is handled automatically by App.tsx
+      // when isAuthenticated becomes true
     } catch (error) {
       // Error already handled in AuthContext
     } finally {
@@ -49,6 +73,19 @@ export function AuthLogin({ onSwitchToSignup }: LoginProps) {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === "phone" && phoneError) {
+      setPhoneError("");
+    }
+  };
+
+  const handlePhoneChange = (value: string | undefined) => {
+    const phoneValue = value || "";
+    handleInputChange("phone", phoneValue);
+    if (phoneValue && !isValidPhoneNumber(phoneValue)) {
+      setPhoneError("Invalid phone number format");
+    } else {
+      setPhoneError("");
+    }
   };
 
   return (
@@ -129,26 +166,81 @@ export function AuthLogin({ onSwitchToSignup }: LoginProps) {
             
             <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Email Field */}
+                {/* Phone Number Field */}
                 <motion.div 
                   className="space-y-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="analyst@example.com"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="pl-10 border-gray-200 focus:border-orange-300 focus:ring-orange-200"
-                      disabled={isLoading}
-                    />
+                    {/* <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none" /> */}
+                    <div className="pl-0">
+                      <PhoneInput
+                        international
+                        defaultCountry="KW"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        placeholder="Enter phone number"
+                        disabled={isLoading}
+                        className="phone-input-custom"
+                        
+                      />
+                    </div>
+                    {phoneError && (
+                      <p className="text-sm text-red-500 mt-1">{phoneError}</p>
+                    )}
                   </div>
+                  <style>{`
+                    .phone-input-custom {
+                      display: flex;
+                      align-items: center;
+                      width: 100%;
+                    }
+                    .phone-input-custom .PhoneInputCountry {
+                      margin-right: 0.5rem;
+                      display: flex;
+                      align-items: center;
+                    }
+                    .phone-input-custom .PhoneInputCountrySelect {
+                      border: 1px solid #e5e7eb;
+                      border-radius: 0.375rem;
+                      padding: 0.5rem;
+                      background: white;
+                      font-size: 0.875rem;
+                      cursor: pointer;
+                    }
+                    .phone-input-custom .PhoneInputCountrySelect:focus {
+                      outline: none;
+                      border-color: #fb923c;
+                      ring: 2px;
+                      ring-color: #fed7aa;
+                    }
+                    .phone-input-custom .PhoneInputInput {
+                      flex: 1;
+                      border: 1px solid #e5e7eb;
+                      border-radius: 0.375rem;
+                      padding: 0.5rem 0.75rem;
+                      font-size: 0.875rem;
+                      height: 2.5rem;
+                      background: white;
+                    }
+                    .phone-input-custom .PhoneInputInput:focus {
+                      outline: none;
+                      border-color: #fb923c;
+                      ring: 2px;
+                      ring-color: #fed7aa;
+                    }
+                    .phone-input-custom .PhoneInputInput:disabled {
+                      cursor: not-allowed;
+                      opacity: 0.5;
+                      background: #f9fafb;
+                    }
+                    .phone-input-custom .PhoneInputInput::placeholder {
+                      color: #9ca3af;
+                    }
+                  `}</style>
                 </motion.div>
 
                 {/* Password Field */}

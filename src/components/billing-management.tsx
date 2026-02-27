@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   CreditCard,
@@ -46,7 +46,7 @@ import { Separator } from "./ui/separator";
 import { Progress } from "./ui/progress";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Checkbox } from "./ui/checkbox";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -1023,7 +1023,7 @@ export function BillingManagement({ isOpen, onClose }: {
               <div className="grid grid-cols-1 gap-4">
                 {paymentMethods.map((method) => (
                   <PaymentMethodCard
-                    key={method.id}
+                    // key={method.id}
                     paymentMethod={method}
                     onEdit={() => {}}
                     onDelete={handleDeletePaymentMethod}
@@ -1064,7 +1064,7 @@ export function BillingManagement({ isOpen, onClose }: {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {subscriptionPlans.map((plan) => (
                   <PlanCard
-                    key={plan.id}
+                    // key={plan.id}
                     plan={plan}
                     currentPlan={currentPlan}
                     onSelectPlan={handleUpgradePlan}

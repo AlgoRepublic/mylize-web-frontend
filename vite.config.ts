@@ -1,10 +1,37 @@
-
-  import { defineConfig } from 'vite';
+  import { defineConfig, loadEnv } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
+  import fs from 'fs';
+
+  /** Injects env into public/firebase-messaging-sw.js so the service worker has Firebase config. */
+  function firebaseMessagingSwPlugin() {
+    return {
+      name: 'firebase-messaging-sw',
+      configResolved(config) {
+        const env = loadEnv(config.mode, process.cwd(), '');
+        const publicDir = path.join(process.cwd(), 'public');
+        const swPath = path.join(publicDir, 'firebase-messaging-sw.js');
+        const templatePath = path.join(publicDir, 'firebase-messaging-sw.js');
+        if (!fs.existsSync(templatePath)) return;
+        let content = fs.readFileSync(templatePath, 'utf-8');
+        const keys = [
+          'VITE_FIREBASE_API_KEY',
+          'VITE_FIREBASE_AUTH_DOMAIN',
+          'VITE_FIREBASE_PROJECT_ID',
+          'VITE_FIREBASE_STORAGE_BUCKET',
+          'VITE_FIREBASE_MESSAGING_SENDER_ID',
+          'VITE_FIREBASE_APP_ID',
+        ];
+        for (const key of keys) {
+          content = content.replace(new RegExp(`__${key}__`, 'g'), env[key] ?? '');
+        }
+        fs.writeFileSync(swPath, content);
+      },
+    };
+  }
 
   export default defineConfig({
-    plugins: [react()],
+    plugins: [firebaseMessagingSwPlugin(), react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {

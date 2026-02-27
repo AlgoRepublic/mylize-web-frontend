@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowLeft,
@@ -37,7 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Separator } from "./ui/separator";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -762,7 +762,7 @@ export function PlanUpgrade({ onBack }: { onBack: () => void }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {plans.map((plan) => (
           <PlanCard
-            key={plan.id}
+            // key={plan.id}
             plan={plan}
             currentPlan={currentPlan}
             billingCycle={billingCycle}
