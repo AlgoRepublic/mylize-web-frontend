@@ -1,6 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
+import {
+  useGetReferralDashboardQuery,
+  useGetReferralOwnersQuery,
+  useGetReferralCodesQuery,
+  useGetReferralOwedQuery,
+  useGetReferralTransfersQuery,
+  useCreateReferralOwnerMutation,
+  useCreateReferralCodeMutation,
+  useCreateReferralOwedMutation,
+  useToggleReferralOwnerMutation,
+  useToggleReferralCodeMutation,
+  type ReferralOwner,
+  type ReferralCode,
+  type ReferralOwed,
+  type ReferralTransfer,
+  ReferralDashboard,
+} from "../store/api/referralApi";
 import { 
   Users,
   Copy,
@@ -55,361 +72,18 @@ const COLORS = {
   lightGray: "#F2F4F7" // Light Gray
 };
 
-interface Owner {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  bankAccount?: string;
-  paymentMethod: "bank_transfer" | "paypal" | "crypto" | "cash";
-  paymentDetails: string;
-  isActive: boolean;
-  createdAt: Date;
-  owedAmount: number;
-  totalPaid: number;
-}
+// interface SystemStats {
+//   totalOwners: number;
+//   activeOwners: number;
+//   activeOwnersNewThisMonth: number;
+//   totalOwed: number;
+//   totalPaid: number;
+//   thisMonthTransactions: number;
+//   thisMonthTransfers: number;
+//   totalPaidTransfers: number;
+// }
 
-interface ReferralCode {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  ownerId: string;
-  ownerName: string;
-  commissionRate: number;
-  isActive: boolean;
-  createdAt: Date;
-  expiresAt?: Date;
-  usageCount: number;
-  maxUsage?: number;
-  totalEarnings: number;
-}
-
-interface OwedTransaction {
-  id: string;
-  ownerId: string;
-  ownerName: string;
-  amount: number;
-  description: string;
-  date: Date;
-  notes?: string;
-}
-
-interface Transfer {
-  id: string;
-  ownerId: string;
-  ownerName: string;
-  amount: number;
-  transactionNumber: string;
-  transferDate: Date;
-  notes?: string;
-}
-
-interface SystemStats {
-  totalOwners: number;
-  activeOwners: number;
-  totalOwed: number;
-  totalPaid: number;
-  thisMonthTransactions: number;
-  thisMonthTransfers: number;
-}
-
-const mockSystemStats: SystemStats = {
-  totalOwners: 8,
-  activeOwners: 6,
-  totalOwed: 1285.50,
-  totalPaid: 4135.25,
-  thisMonthTransactions: 15,
-  thisMonthTransfers: 8
-};
-
-const mockOwners: Owner[] = [
-  {
-    id: "1",
-    name: "Ahmed Al-Rashid",
-    email: "ahmed@business.com",
-    phone: "+965-9999-1234",
-    bankAccount: "KW12 CBK0 0000 0000 0000 1234",
-    paymentMethod: "bank_transfer",
-    paymentDetails: "Commercial Bank of Kuwait - Account 1234",
-    isActive: true,
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    owedAmount: 485.75,
-    totalPaid: 1850.00
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah@trading.co",
-    phone: "+965-9999-5678",
-    paymentMethod: "paypal",
-    paymentDetails: "PayPal: sarah.johnson@email.com",
-    isActive: true,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    owedAmount: 320.50,
-    totalPaid: 1200.25
-  },
-  {
-    id: "3",
-    name: "Mohammad Al-Sabah",
-    email: "mohammad@finance.kw",
-    phone: "+965-9999-9012",
-    bankAccount: "KW98 NBK0 0000 0000 0000 5678",
-    paymentMethod: "bank_transfer",
-    paymentDetails: "National Bank of Kuwait - Account 5678",
-    isActive: true,
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    owedAmount: 275.25,
-    totalPaid: 675.00
-  },
-  {
-    id: "4",
-    name: "Fatima Al-Zahra",
-    email: "fatima@invest.kw",
-    phone: "+965-9999-3456",
-    paymentMethod: "crypto",
-    paymentDetails: "Bitcoin Wallet: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    isActive: true,
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-    owedAmount: 150.00,
-    totalPaid: 300.00
-  },
-  {
-    id: "5",
-    name: "Omar Al-Mutairi",
-    email: "omar@consulting.kw",
-    phone: "+965-9999-7890",
-    paymentMethod: "cash",
-    paymentDetails: "Cash pickup at office",
-    isActive: true,
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    owedAmount: 54.00,
-    totalPaid: 110.00
-  }
-];
-
-const mockReferralCodes: ReferralCode[] = [
-  {
-    id: "1",
-    code: "AHMED-VIP24",
-    name: "Ahmed VIP Clients",
-    description: "VIP client referrals for premium services",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    commissionRate: 25,
-    isActive: true,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    usageCount: 18,
-    totalEarnings: 1580.00
-  },
-  {
-    id: "2",
-    code: "SARAH-TRADE",
-    name: "Sarah Trading Network",
-    description: "Trading network and educational referrals",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    commissionRate: 30,
-    isActive: true,
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
-    usageCount: 12,
-    maxUsage: 50,
-    totalEarnings: 1320.75
-  },
-  {
-    id: "3",
-    code: "MOHAMMAD-CORP",
-    name: "Mohammad Corporate",
-    description: "Corporate clients and business partnerships",
-    ownerId: "3",
-    ownerName: "Mohammad Al-Sabah",
-    commissionRate: 20,
-    isActive: true,
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    usageCount: 8,
-    totalEarnings: 850.00
-  },
-  {
-    id: "4",
-    code: "AHMED-GOLD",
-    name: "Ahmed Gold Package",
-    description: "Gold package referrals with higher commission",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    commissionRate: 35,
-    isActive: true,
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    usageCount: 6,
-    totalEarnings: 870.00
-  },
-  {
-    id: "5",
-    code: "SARAH-BASIC",
-    name: "Sarah Basic Services",
-    description: "Basic services and starter packages",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    commissionRate: 15,
-    isActive: true,
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    usageCount: 15,
-    totalEarnings: 500.00
-  },
-  {
-    id: "6",
-    code: "FATIMA-SPECIAL",
-    name: "Fatima Special Offer",
-    description: "Special promotional offer - inactive",
-    ownerId: "4",
-    ownerName: "Fatima Al-Zahra",
-    commissionRate: 40,
-    isActive: false,
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-    usageCount: 3,
-    totalEarnings: 450.00
-  }
-];
-
-const mockOwedTransactions: OwedTransaction[] = [
-  {
-    id: "1",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    amount: 125.75,
-    description: "VIP client referral - Khalid Al-Mutairi",
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    notes: "Premium service signup"
-  },
-  {
-    id: "2",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    amount: 360.00,
-    description: "Gold package referral - Multiple clients",
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    notes: "Bulk referral bonus"
-  },
-  {
-    id: "3",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    amount: 180.50,
-    description: "Trading course referrals",
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    notes: "Educational package sales"
-  },
-  {
-    id: "4",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    amount: 140.00,
-    description: "Basic package referrals - New traders",
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-  },
-  {
-    id: "5",
-    ownerId: "3",
-    ownerName: "Mohammad Al-Sabah",
-    amount: 275.25,
-    description: "Corporate consulting referral - Noor Al-Sabah",
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    notes: "Large corporate deal"
-  },
-  {
-    id: "6",
-    ownerId: "4",
-    ownerName: "Fatima Al-Zahra",
-    amount: 150.00,
-    description: "Special promotion referrals",
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  },
-  {
-    id: "7",
-    ownerId: "5",
-    ownerName: "Omar Al-Mutairi",
-    amount: 54.00,
-    description: "Basic service referrals",
-    date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
-  }
-];
-
-const mockTransfers: Transfer[] = [
-  {
-    id: "1",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    amount: 500.00,
-    transactionNumber: "TXN-2024-001",
-    transferDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    notes: "Monthly payout - Bank transfer"
-  },
-  {
-    id: "2",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    amount: 350.00,
-    transactionNumber: "TXN-2024-002",
-    transferDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    notes: "PayPal transfer completed"
-  },
-  {
-    id: "3",
-    ownerId: "1",
-    ownerName: "Ahmed Al-Rashid",
-    amount: 750.00,
-    transactionNumber: "TXN-2024-003",
-    transferDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    notes: "Large payout - Bank transfer"
-  },
-  {
-    id: "4",
-    ownerId: "3",
-    ownerName: "Mohammad Al-Sabah",
-    amount: 400.00,
-    transactionNumber: "TXN-2024-004",
-    transferDate: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-    notes: "Corporate commission payout"
-  },
-  {
-    id: "5",
-    ownerId: "2",
-    ownerName: "Sarah Johnson",
-    amount: 275.00,
-    transactionNumber: "TXN-2024-005",
-    transferDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    notes: "Educational package commissions"
-  },
-  {
-    id: "6",
-    ownerId: "4",
-    ownerName: "Fatima Al-Zahra",
-    amount: 150.00,
-    transactionNumber: "TXN-2024-006",
-    transferDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-    notes: "Crypto wallet transfer"
-  },
-  {
-    id: "7",
-    ownerId: "3",
-    ownerName: "Mohammad Al-Sabah",
-    amount: 275.00,
-    transactionNumber: "TXN-2024-007",
-    transferDate: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
-    notes: "NBK bank transfer"
-  },
-  {
-    id: "8",
-    ownerId: "5",
-    ownerName: "Omar Al-Mutairi",
-    amount: 110.00,
-    transactionNumber: "TXN-2024-008",
-    transferDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    notes: "Cash pickup completed"
-  }
-];
-
-function SystemStatsCard({ stats }: { stats: SystemStats }) {
+function SystemStatsCard({ stats }: { stats: ReferralDashboard }) {
   const statsData = [
     {
       label: "Active Owners",
@@ -417,7 +91,7 @@ function SystemStatsCard({ stats }: { stats: SystemStats }) {
       subtitle: `${stats.totalOwners} total`,
       icon: <Users className="w-5 h-5" />,
       color: COLORS.primary,
-      change: "+1 this month",
+      change: `+${stats.activeOwnersNewThisMonth} this month`,
       positive: true
     },
     {
@@ -435,7 +109,7 @@ function SystemStatsCard({ stats }: { stats: SystemStats }) {
       subtitle: "All-time payments",
       icon: <DollarSign className="w-5 h-5" />,
       color: "#10B981",
-      change: `${stats.thisMonthTransfers} transfers`,
+      change: `${stats.totalPaidTransfers} transfers`,
       positive: true
     },
     {
@@ -444,7 +118,7 @@ function SystemStatsCard({ stats }: { stats: SystemStats }) {
       subtitle: "Transfers made",
       icon: <Send className="w-5 h-5" />,
       color: "#8B5CF6",
-      change: "+25.2%",
+      change:  `${stats.thisMonthTransfersPercentageChange}%`,
       positive: true
     }
   ];
@@ -500,15 +174,25 @@ function SystemStatsCard({ stats }: { stats: SystemStats }) {
   );
 }
 
-function AddOwnerDialog({ isOpen, onClose, onAdd }: {
+function AddOwnerDialog({ isOpen, onClose, onAdd, isLoading }: {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (owner: Partial<Owner>) => void;
+  onAdd: (payload: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    phoneCode?: string;
+    paymentMethod: string;
+    bankAccount?: string;
+    paymentDetails: string;
+  }) => void;
+  isLoading?: boolean;
 }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    phoneCode: "+965",
     bankAccount: "",
     paymentMethod: "bank_transfer" as const,
     paymentDetails: ""
@@ -521,24 +205,20 @@ function AddOwnerDialog({ isOpen, onClose, onAdd }: {
     }
 
     onAdd({
-      name: formData.name,
+      fullName: formData.name,
       email: formData.email,
-      phone: formData.phone,
-      bankAccount: formData.bankAccount,
+      phone: formData.phone || undefined,
+      phoneCode: formData.phoneCode || "+965",
       paymentMethod: formData.paymentMethod,
+      bankAccount: formData.bankAccount || undefined,
       paymentDetails: formData.paymentDetails,
-      isActive: true,
-      createdAt: new Date(),
-      totalEarnings: 0,
-      pendingEarnings: 0,
-      totalCodes: 0,
-      activeCodes: 0
     });
 
     setFormData({
       name: "",
       email: "",
       phone: "",
+      phoneCode: "+965",
       bankAccount: "",
       paymentMethod: "bank_transfer",
       paymentDetails: ""
@@ -578,13 +258,36 @@ function AddOwnerDialog({ isOpen, onClose, onAdd }: {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Phone Number</Label>
-            <Input
-              placeholder="+965-9999-1234"
-              value={formData.phone}
-              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-1 space-y-2">
+              <Label>Phone Code</Label>
+              <Select
+                value={formData.phoneCode}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, phoneCode: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="+965">+965</SelectItem>
+                  <SelectItem value="+1">+1</SelectItem>
+                  <SelectItem value="+44">+44</SelectItem>
+                  <SelectItem value="+971">+971</SelectItem>
+                  <SelectItem value="+966">+966</SelectItem>
+                  <SelectItem value="+20">+20</SelectItem>
+                  <SelectItem value="+91">+91</SelectItem>
+                  <SelectItem value="+92">+92</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label>Phone Number</Label>
+              <Input
+                placeholder="99991234"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -633,11 +336,11 @@ function AddOwnerDialog({ isOpen, onClose, onAdd }: {
         </div>
 
         <DialogFooter className="gap-3">
-          <Button variant="outline" onClick={onClose} type="button">
+          <Button variant="outline" onClick={onClose} type="button" disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} style={{ backgroundColor: COLORS.primary }} type="button">
-            Add Owner
+          <Button onClick={handleSubmit} style={{ backgroundColor: COLORS.primary }} type="button" disabled={isLoading}>
+            {isLoading ? "Adding…" : "Add Owner"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -645,23 +348,28 @@ function AddOwnerDialog({ isOpen, onClose, onAdd }: {
   );
 }
 
-function ReferralCodeGenerator({ onGenerate, owners }: {
-  onGenerate: (code: Partial<ReferralCode>) => void;
-  owners: Owner[];
+function ReferralCodeGenerator({ onCreate, owners, isLoading }: {
+  onCreate: (payload: {
+    codeName: string;
+    description: string;
+    referralOwner: string;
+    commissionRate: number;
+    maxUsage?: number;
+  }) => void;
+  owners: ReferralOwner[];
+  isLoading?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    code: "",
     commissionRate: 25,
     maxUsage: "",
-    expiresAt: "",
     ownerId: ""
   });
 
   const handleGenerate = () => {
-    if (!formData.name || !formData.code || !formData.ownerId) {
+    if (!formData.name || !formData.ownerId) {
       toast.error("Please fill in required fields");
       return;
     }
@@ -672,40 +380,22 @@ function ReferralCodeGenerator({ onGenerate, owners }: {
       return;
     }
 
-    onGenerate({
-      code: formData.code.toUpperCase(),
-      name: formData.name,
+    onCreate({
+      codeName: formData.name,
       description: formData.description,
-      ownerId: selectedOwner.id,
-      ownerName: selectedOwner.name,
+      referralOwner: selectedOwner.id,
       commissionRate: formData.commissionRate,
-      maxUsage: formData.maxUsage ? parseInt(formData.maxUsage) : undefined,
-      expiresAt: formData.expiresAt ? new Date(formData.expiresAt) : undefined,
-      isActive: true,
-      createdAt: new Date(),
-      usageCount: 0,
-      totalEarnings: 0
+      maxUsage: formData.maxUsage ? parseInt(formData.maxUsage, 10) : undefined,
     });
 
     setFormData({
       name: "",
       description: "",
-      code: "",
       commissionRate: 25,
       maxUsage: "",
-      expiresAt: "",
       ownerId: ""
     });
     setIsOpen(false);
-  };
-
-  const generateRandomCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < 8; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setFormData(prev => ({ ...prev, code: result }));
   };
 
   return (
@@ -747,21 +437,6 @@ function ReferralCodeGenerator({ onGenerate, owners }: {
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Referral Code *</Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="OWNER-CODE24"
-                  value={formData.code}
-                  onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                  className="flex-1"
-                />
-                <Button variant="outline" onClick={generateRandomCode} type="button">
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -810,33 +485,23 @@ function ReferralCodeGenerator({ onGenerate, owners }: {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Max Usage (Optional)</Label>
-                <Input
-                  type="number"
-                  placeholder="Unlimited"
-                  value={formData.maxUsage}
-                  onChange={(e) => setFormData(prev => ({ ...prev, maxUsage: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Expires At (Optional)</Label>
-                <Input
-                  type="date"
-                  value={formData.expiresAt}
-                  onChange={(e) => setFormData(prev => ({ ...prev, expiresAt: e.target.value }))}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Max Usage (Optional)</Label>
+              <Input
+                type="number"
+                placeholder="Unlimited"
+                value={formData.maxUsage}
+                onChange={(e) => setFormData(prev => ({ ...prev, maxUsage: e.target.value }))}
+              />
             </div>
           </div>
 
           <DialogFooter className="gap-3">
-            <Button variant="outline" onClick={() => setIsOpen(false)} type="button">
+            <Button variant="outline" onClick={() => setIsOpen(false)} type="button" disabled={isLoading}>
               Cancel
             </Button>
-            <Button onClick={handleGenerate} style={{ backgroundColor: COLORS.primary }} type="button">
-              Create Code
+            <Button onClick={handleGenerate} style={{ backgroundColor: COLORS.primary }} type="button" disabled={isLoading}>
+              {isLoading ? "Creating…" : "Create Code"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -845,11 +510,12 @@ function ReferralCodeGenerator({ onGenerate, owners }: {
   );
 }
 
-function AddOwedAmountDialog({ isOpen, onClose, onAdd, owners }: {
+function AddOwedAmountDialog({ isOpen, onClose, onAdd, owners, isLoading }: {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (transaction: Partial<OwedTransaction>) => void;
-  owners: Owner[];
+  onAdd: (payload: { referralOwner: string; amount: number; description: string; notes?: string }) => void;
+  owners: ReferralOwner[];
+  isLoading?: boolean;
 }) {
   const [formData, setFormData] = useState({
     ownerId: "",
@@ -877,12 +543,10 @@ function AddOwedAmountDialog({ isOpen, onClose, onAdd, owners }: {
     }
 
     onAdd({
-      ownerId: selectedOwner.id,
-      ownerName: selectedOwner.name,
-      amount: amount,
+      referralOwner: selectedOwner.id,
+      amount,
       description: formData.description,
-      date: new Date(),
-      notes: formData.notes
+      notes: formData.notes || undefined,
     });
 
     setFormData({
@@ -962,11 +626,11 @@ function AddOwedAmountDialog({ isOpen, onClose, onAdd, owners }: {
         </div>
 
         <DialogFooter className="gap-3">
-          <Button variant="outline" onClick={onClose} type="button">
+          <Button variant="outline" onClick={onClose} type="button" disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} style={{ backgroundColor: COLORS.primary }} type="button">
-            Add Amount
+          <Button onClick={handleSubmit} style={{ backgroundColor: COLORS.primary }} type="button" disabled={isLoading}>
+            {isLoading ? "Adding…" : "Add Amount"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -977,8 +641,8 @@ function AddOwedAmountDialog({ isOpen, onClose, onAdd, owners }: {
 function TransferDialog({ isOpen, onClose, onTransfer, owner }: {
   isOpen: boolean;
   onClose: () => void;
-  onTransfer: (transfer: Partial<Transfer>) => void;
-  owner: Owner | null;
+  onTransfer: (transfer: { ownerId: string; ownerName: string; amount: number; transactionNumber: string; notes?: string; transferDate?: Date }) => void;
+  owner: ReferralOwner | null;
 }) {
   const [formData, setFormData] = useState({
     amount: "",
@@ -1105,106 +769,118 @@ function TransferDialog({ isOpen, onClose, onTransfer, owner }: {
 
 export function ReferralSystem() {
   const { t } = useTranslation();
-  const [stats] = useState<SystemStats>(mockSystemStats);
-  const [owners, setOwners] = useState<Owner[]>(mockOwners);
-  const [referralCodes, setReferralCodes] = useState<ReferralCode[]>(mockReferralCodes);
-  const [owedTransactions, setOwedTransactions] = useState<OwedTransaction[]>(mockOwedTransactions);
-  const [transfers, setTransfers] = useState<Transfer[]>(mockTransfers);
-  
   const [showAddOwner, setShowAddOwner] = useState(false);
   const [showAddOwedAmount, setShowAddOwedAmount] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
-  const [selectedOwnerForTransfer, setSelectedOwnerForTransfer] = useState<Owner | null>(null);
+  const [selectedOwnerForTransfer, setSelectedOwnerForTransfer] = useState<ReferralOwner | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleAddOwner = (newOwner: Partial<Owner>) => {
-    const owner: Owner = {
-      id: Date.now().toString(),
-      name: newOwner.name!,
-      email: newOwner.email!,
-      phone: newOwner.phone,
-      bankAccount: newOwner.bankAccount,
-      paymentMethod: newOwner.paymentMethod!,
-      paymentDetails: newOwner.paymentDetails!,
-      isActive: true,
-      createdAt: new Date(),
-      owedAmount: 0,
-      totalPaid: 0
+  const { data: dashboardData, isLoading: dashboardLoading } = useGetReferralDashboardQuery();
+  const { data: owners = [], isLoading: ownersLoading, refetch: refetchOwners } = useGetReferralOwnersQuery();
+  const { data: referralCodes = [], isLoading: codesLoading, refetch: refetchCodes } = useGetReferralCodesQuery();
+  const { data: owedTransactions = [], isLoading: owedLoading, refetch: refetchOwed } = useGetReferralOwedQuery();
+  const { data: transfers = [], isLoading: transfersLoading, refetch: refetchTransfers } = useGetReferralTransfersQuery();
+
+  const [createOwner, { isLoading: createOwnerLoading }] = useCreateReferralOwnerMutation();
+  const [createCode, { isLoading: createCodeLoading }] = useCreateReferralCodeMutation();
+  const [createOwed, { isLoading: createOwedLoading }] = useCreateReferralOwedMutation();
+  const [toggleOwner] = useToggleReferralOwnerMutation();
+  const [toggleCode] = useToggleReferralCodeMutation();
+
+  const stats: ReferralDashboard = useMemo(() => {
+    console.log('dashboardData', dashboardData);
+    if (dashboardData) {
+      return {
+        totalOwners: dashboardData.totalOwners,
+        activeOwners: dashboardData.activeOwners,
+        activeOwnersNewThisMonth: dashboardData.activeOwnersNewThisMonth,
+        totalOwed: dashboardData.totalOwed,
+        totalPaid: dashboardData.totalPaid,
+        thisMonthTransactions: dashboardData.thisMonthTransactions,
+        thisMonthTransfers: dashboardData.thisMonthTransfers,
+        thisMonthTransfersPercentageChange: dashboardData.thisMonthTransfersPercentageChange,
+        totalPaidTransfers: dashboardData.totalPaidTransfers,
+      };
+    }
+    const totalOwners = owners.length;
+    const activeOwners = owners.filter((o) => o.isActive).length;
+    const totalOwed = owners.reduce((sum, o) => sum + (o.owedAmount ?? 0), 0);
+    const totalPaid = owners.reduce((sum, o) => sum + (o.totalPaid ?? 0), 0);
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const thisMonthTransactions = owedTransactions.filter(
+      (tx) => new Date(tx.date).getMonth() === thisMonth && new Date(tx.date).getFullYear() === thisYear
+    ).length;
+    const thisMonthTransfers = transfers.filter(
+      (tx) => new Date(tx.transferDate).getMonth() === thisMonth && new Date(tx.transferDate).getFullYear() === thisYear
+    ).length;
+    return {
+      totalOwners,
+      activeOwners,
+      totalOwed,
+      totalPaid,
+      thisMonthTransactions,
+      thisMonthTransfers,
     };
-    setOwners(prev => [owner, ...prev]);
-    toast.success("Owner added successfully!");
+  }, [dashboardData, owners, owedTransactions, transfers]);
+
+  const handleAddOwner = async (payload: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    phoneCode?: string;
+    paymentMethod: string;
+    bankAccount?: string;
+    paymentDetails: string;
+  }) => {
+    try {
+      await createOwner(payload).unwrap();
+      toast.success("Owner added successfully!");
+      setShowAddOwner(false);
+    } catch (err: unknown) {
+      const msg = err && typeof err === "object" && "data" in (err as { data?: { message?: string } }) ? (err as { data: { message?: string } }).data?.message : "Failed to add owner";
+      toast.error(msg || "Failed to add owner");
+    }
   };
 
-  const handleAddReferralCode = (newCode: Partial<ReferralCode>) => {
-    const code: ReferralCode = {
-      id: Date.now().toString(),
-      code: newCode.code!,
-      name: newCode.name!,
-      description: newCode.description!,
-      ownerId: newCode.ownerId!,
-      ownerName: newCode.ownerName!,
-      commissionRate: newCode.commissionRate!,
-      isActive: true,
-      createdAt: new Date(),
-      expiresAt: newCode.expiresAt,
-      usageCount: 0,
-      maxUsage: newCode.maxUsage,
-      totalEarnings: 0
-    };
-    setReferralCodes(prev => [code, ...prev]);
-    toast.success("Referral code created successfully!");
+  const handleAddReferralCode = async (payload: {
+    codeName: string;
+    description: string;
+    referralOwner: string;
+    commissionRate: number;
+    maxUsage?: number;
+  }) => {
+    try {
+      await createCode(payload).unwrap();
+      toast.success("Referral code created successfully!");
+    } catch (err: unknown) {
+      const msg = err && typeof err === "object" && "data" in (err as { data?: { message?: string } }) ? (err as { data: { message?: string } }).data?.message : "Failed to create code";
+      toast.error(msg || "Failed to create code");
+    }
   };
 
-  const handleAddOwedAmount = (newTransaction: Partial<OwedTransaction>) => {
-    const transaction: OwedTransaction = {
-      id: Date.now().toString(),
-      ownerId: newTransaction.ownerId!,
-      ownerName: newTransaction.ownerName!,
-      amount: newTransaction.amount!,
-      description: newTransaction.description!,
-      date: new Date(),
-      notes: newTransaction.notes
-    };
-    setOwedTransactions(prev => [transaction, ...prev]);
-
-    // Update owner's owed amount
-    setOwners(prev => prev.map(owner => 
-      owner.id === newTransaction.ownerId 
-        ? { ...owner, owedAmount: owner.owedAmount + newTransaction.amount! }
-        : owner
-    ));
-
-    toast.success("Owed amount added successfully!");
+  const handleAddOwedAmount = async (payload: { referralOwner: string; amount: number; description: string; notes?: string }) => {
+    try {
+      await createOwed(payload).unwrap();
+      toast.success("Owed amount added successfully!");
+      setShowAddOwedAmount(false);
+    } catch (err: unknown) {
+      const msg = err && typeof err === "object" && "data" in (err as { data?: { message?: string } }) ? (err as { data: { message?: string } }).data?.message : "Failed to add owed amount";
+      toast.error(msg || "Failed to add owed amount");
+    }
   };
 
-  const handleTransfer = (newTransfer: Partial<Transfer>) => {
-    const transfer: Transfer = {
-      id: Date.now().toString(),
-      ownerId: newTransfer.ownerId!,
-      ownerName: newTransfer.ownerName!,
-      amount: newTransfer.amount!,
-      transactionNumber: newTransfer.transactionNumber!,
-      transferDate: new Date(),
-      notes: newTransfer.notes
-    };
-    setTransfers(prev => [transfer, ...prev]);
-
-    // Update owner's balances
-    setOwners(prev => prev.map(owner => 
-      owner.id === newTransfer.ownerId 
-        ? { 
-            ...owner, 
-            owedAmount: owner.owedAmount - newTransfer.amount!,
-            totalPaid: owner.totalPaid + newTransfer.amount!
-          }
-        : owner
-    ));
-
-    toast.success(`Transfer of KWD ${newTransfer.amount} completed!`);
+  const handleTransfer = (newTransfer: { ownerId: string; ownerName: string; amount: number; transactionNumber: string; notes?: string; transferDate?: Date }) => {
+    toast.success(`Record transfer of KWD ${newTransfer.amount} to ${newTransfer.ownerName}. Transfer history is loaded from the server.`);
     setSelectedOwnerForTransfer(null);
+    setShowTransferDialog(false);
+    refetchOwners();
+    refetchOwed();
+    refetchTransfers();
   };
 
-  const handleOwnerClick = (owner: Owner) => {
+  const handleOwnerClick = (owner: ReferralOwner) => {
     if (owner.owedAmount > 0) {
       setSelectedOwnerForTransfer(owner);
       setShowTransferDialog(true);
@@ -1213,16 +889,22 @@ export function ReferralSystem() {
     }
   };
 
-  const handleToggleOwnerStatus = (ownerId: string) => {
-    setOwners(prev => prev.map(owner => 
-      owner.id === ownerId ? { ...owner, isActive: !owner.isActive } : owner
-    ));
+  const handleToggleOwnerStatus = async (ownerId: string) => {
+    try {
+      await toggleOwner(ownerId).unwrap();
+      toast.success("Owner status updated");
+    } catch {
+      toast.error("Failed to toggle owner status");
+    }
   };
 
-  const handleToggleCodeStatus = (codeId: string) => {
-    setReferralCodes(prev => prev.map(code => 
-      code.id === codeId ? { ...code, isActive: !code.isActive } : code
-    ));
+  const handleToggleCodeStatus = async (codeId: string) => {
+    try {
+      await toggleCode(codeId).unwrap();
+      toast.success("Code status updated");
+    } catch {
+      toast.error("Failed to toggle code status");
+    }
   };
 
   const filteredOwners = owners.filter(owner =>
@@ -1259,7 +941,7 @@ export function ReferralSystem() {
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -1269,8 +951,16 @@ export function ReferralSystem() {
               className="pl-10 w-full sm:w-80"
             />
           </div>
-        </div>
+        </div> */}
       </div>
+
+      {/* Loading / error */}
+      {(dashboardLoading || ownersLoading || codesLoading || owedLoading || transfersLoading) && (
+        <div className="flex items-center gap-2 text-gray-600">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>Loading referral data…</span>
+        </div>
+      )}
 
       {/* System Stats */}
       <SystemStatsCard stats={stats} />
@@ -1368,10 +1058,7 @@ export function ReferralSystem() {
                       )}
                       <Switch
                         checked={owner.isActive}
-                        onCheckedChange={(e) => {
-                          e.stopPropagation();
-                          handleToggleOwnerStatus(owner.id);
-                        }}
+                        onCheckedChange={() => handleToggleOwnerStatus(owner.id)}
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -1401,7 +1088,7 @@ export function ReferralSystem() {
             <h2 className="text-xl font-semibold" style={{ color: COLORS.dark }}>
               {t("pages.referralSystem.tabs.referralCodes")} ({filteredCodes.length})
             </h2>
-            <ReferralCodeGenerator onGenerate={handleAddReferralCode} owners={owners} />
+            <ReferralCodeGenerator onCreate={handleAddReferralCode} owners={owners} isLoading={createCodeLoading} />
           </div>
 
           <div className="grid gap-4">
@@ -1647,6 +1334,7 @@ export function ReferralSystem() {
         isOpen={showAddOwner}
         onClose={() => setShowAddOwner(false)}
         onAdd={handleAddOwner}
+        isLoading={createOwnerLoading}
       />
 
       <AddOwedAmountDialog
@@ -1654,6 +1342,7 @@ export function ReferralSystem() {
         onClose={() => setShowAddOwedAmount(false)}
         onAdd={handleAddOwedAmount}
         owners={owners}
+        isLoading={createOwedLoading}
       />
 
       <TransferDialog

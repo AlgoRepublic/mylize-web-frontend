@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Settings as SettingsIcon,
@@ -41,7 +41,6 @@ import {
   MapPin,
   Lock,
   Unlock,
-  Switch as SwitchIcon,
   Moon,
   Sun,
   Smartphone,
@@ -73,7 +72,7 @@ import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Textarea } from "./ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { BillingManagement } from "./billing-management";
 
 const COLORS = {

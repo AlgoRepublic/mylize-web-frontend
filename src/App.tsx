@@ -61,17 +61,17 @@ export default function App() {
   };
 
   // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.lightGray }}>
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4" 
-               style={{ borderColor: COLORS.lightGray, borderTopColor: COLORS.primary }} />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.lightGray }}>
+  //       <div className="text-center">
+  //         <div className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4" 
+  //              style={{ borderColor: COLORS.lightGray, borderTopColor: COLORS.primary }} />
+  //         <p className="text-gray-600">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // If user is not authenticated, show auth screens
   if (!isAuthenticated) {

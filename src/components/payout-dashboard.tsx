@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   DollarSign,
@@ -69,7 +69,7 @@ import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Textarea } from "./ui/textarea";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 const COLORS = {
   primary: "#EE6D41", // Orange
@@ -1126,7 +1126,7 @@ export function PayoutDashboard() {
 
   const handleAddMethod = (newMethodData: Partial<PayoutMethod>) => {
     const newMethod: PayoutMethod = {
-      id: `pm-${Date.now()}`,
+      // id: `pm-${Date.now()}`,
       ...newMethodData as PayoutMethod
     };
     setPayoutMethods(prev => [...prev, newMethod]);
@@ -1158,7 +1158,7 @@ export function PayoutDashboard() {
 
   const handleCreateSchedule = (newScheduleData: Partial<PayoutSchedule>) => {
     const newSchedule: PayoutSchedule = {
-      id: `sched-${Date.now()}`,
+      // id: `sched-${Date.now()}`,
       ...newScheduleData as PayoutSchedule
     };
     setPayoutSchedules(prev => [...prev, newSchedule]);
@@ -1407,7 +1407,7 @@ export function PayoutDashboard() {
           <div className="space-y-4">
             {payoutMethods.map((method) => (
               <PayoutMethodCard
-                key={method.id}
+                // key={method.id}
                 method={method}
                 onEdit={(method) => console.log("Edit method", method)}
                 onDelete={handleDeleteMethod}
@@ -1467,7 +1467,7 @@ export function PayoutDashboard() {
           <div className="space-y-3">
             {filteredTransactions.map((transaction) => (
               <TransactionRow
-                key={transaction.id}
+                // key={transaction.id}
                 transaction={transaction}
                 onViewDetails={(tx) => {
                   setSelectedTransaction(tx);
@@ -1499,7 +1499,7 @@ export function PayoutDashboard() {
           <div className="space-y-4">
             {payoutSchedules.map((schedule) => (
               <PayoutScheduleCard
-                key={schedule.id}
+                // key={schedule.id}
                 schedule={schedule}
                 onEdit={(schedule) => console.log("Edit schedule", schedule)}
                 onDelete={handleDeleteSchedule}
